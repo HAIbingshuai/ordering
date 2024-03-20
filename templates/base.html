@@ -1,19 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}My Website{% endblock %}</title>
-  <link rel="stylesheet" href="https://cdn.staticfile.org/layui/2.6.8/css/layui.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Website{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/layui/2.6.8/css/layui.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* 隐藏水平滚动条 */
+        }
+
+        .layui-container {
+            width: 100%;
+            max-width: none; /* 取消最大宽度限制 */
+            margin: 0;
+            padding: 0;
+        }
+
+        .layui-row {
+            margin: 0;
+            padding: 0;
+        }
+
+        .query-section {
+            padding: 20px; /* 自定义间距 */
+            background-color: #f2f2f2; /* 自定义背景颜色 */
+        }
+    </style>
 </head>
 <body>
 <div class="layui-container">
-  <div class="layui-row">
-    <div class="layui-col-md-offset1 layui-col-md10">
-      {% block content %}
-      {% endblock %}
+    <div class="layui-row">
+        <div class="layui-col-md-offset0 layui-col-md12">
+            {% block content %}
+            {% endblock %}
+        </div>
     </div>
-  </div>
 </div>
 <script src="https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.staticfile.org/layui/2.6.8/layui.js"></script>

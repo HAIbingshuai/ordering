@@ -223,10 +223,31 @@ def get_dish_list(request):
     #
     # return Result_page.success(data=page_results, total=len(all_results))
     data_list_json = [{'id': 1, 'name': 'hbs', 'status': 12},
-                      {'id': 12, 'name': 'hbs1', 'status': 121},
+                      {'id': 2, 'name': 'hbs1', 'status': 121},
+                      {'id': 3, 'name': 'hbs21', 'status': 1112},
+                      {'id': 4, 'name': 'hbs', 'status': 12},
+                      {'id': 5, 'name': 'hbs1', 'status': 121},
+                      {'id': 6, 'name': 'hbs21', 'status': 1112},
+                      {'id': 7, 'name': 'hbs', 'status': 12},
+                      {'id': 8, 'name': 'hbs1', 'status': 121},
+                      {'id': 9, 'name': 'hbs21', 'status': 1112},
+                      {'id': 10, 'name': 'hbs', 'status': 12},
+                      {'id': 11, 'name': 'hbs1', 'status': 121},
                       {'id': 13, 'name': 'hbs21', 'status': 1112}]
-    print()
-    return render(request, 'dish_page.html', {'data_list': data_list_json})
+    paginator = Paginator(data_list_json, int(request.GET.get('pageSize', 10)))
+    aa = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(int(request.GET.get('page', 1)))
+    page_results = [result for result in paginated_results]
+    return render(request, 'dish_page.html', {'success': True, 'data': page_results, 'total': len(data_list_json)})
+
+
+    #
+    # paginator = Paginator(data_list_json, 10)  # 每页显示10条数据
+    # page_number = request.GET.get('page')  # 获取页码，默认为第一页
+    # page_obj = paginator.get_page(page_number)
+    # page_obj_list = list(page_obj)
+    #
+    # return render(request, 'dish_page.html', {'data_list_json': page_obj_list, 'page_obj': data_list_json})
 
 
 @api_view(['GET'])
