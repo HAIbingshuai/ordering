@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="layui-card">
+  <div class="layui-card-header">查询框</div>
+  <div class="layui-card-body">
+    <form class="layui-form" action="" method="GET">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">关键字</label>
+          <div class="layui-input-inline">
+            <input type="text" name="keyword" lay-verify="required" placeholder="请输入关键字" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <button class="layui-btn" lay-submit lay-filter="formSearch">查询</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="layui-card">
+  <div class="layui-card-header">数据列表</div>
+  <div class="layui-card-body">
+    <table class="layui-table" lay-filter="dataList">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>名称</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in data_list %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.status }}</td>
+          <td>
+            <button class="layui-btn layui-btn-xs" onclick="editItem({{ item.id }})">编辑</button>
+            <button class="layui-btn layui-btn-danger layui-btn-xs" onclick="deleteItem({{ item.id }})">删除</button>
+            <button class="layui-btn layui-btn-normal layui-btn-xs" onclick="viewItem({{ item.id }})">查看</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  layui.use(['form', 'table'], function () {
+    var form = layui.form;
+    var table = layui.table;
+
+    // 数据表格
+    table.render({
+      elem: '#dataList',
+      page: true,
+      limit: 10,
+      cols: [[
+        {field: 'id', title: 'ID'},
+        {field: 'name', title: '名称'},
+        {field: 'status', title: '状态'},
+        {field: '操作', title: '操作', toolbar: '#btnGroup'}
+      ]],
+      data: {{ data_list_json|safe }}
+    });
+
+    // 监听提交
+    form.on('submit(formSearch)', function (data) {
+      // TODO: 提交查询逻辑
+      return false;
+    });
+
+    // 监听工具条
+    table.on('tool(dataList)', function (obj) {
+      var data = obj.data;
+      if (obj.event === 'edit') {
+        editItem(data.id);
+      } else if (obj.event === 'delete') {
+        deleteItem(data.id);
+      } else if (obj.event === 'view') {
+        viewItem(data.id);
+      }
+    });
+
+    // 编辑项
+    function editItem(id) {
+      // TODO: 编辑逻辑
+    }
+
+    // 删除项
+    function deleteItem(id) {
+      // TODO: 删除逻辑
+    }
+
+    // 查看项
+    function viewItem(id) {
+      // TODO: 查看逻辑
+    }
+  });
+</script>
+
+<script type="text/html" id="btnGroup">
+  <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
+  <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
+  <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>
+</script>
+{% endblock %}
