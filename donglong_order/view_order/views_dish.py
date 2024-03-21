@@ -189,65 +189,47 @@ def del_dish(request):
 def get_dish_list(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
-    # try:
-    #     query = {
-    #         'dishName__contains': request.GET.get('dishName')
-    #     }
-    #     firstCategoryId = request.GET.get('firstCategoryId')
-    #     if firstCategoryId:
-    #         query['firstCategoryId_id'] = firstCategoryId
-    # except:
-    #     return Result.error('请检查输入项！')
-    #
-    # all_results = []
-    # dishList = Dish.objects.filter(**query)
-    # for dishOneContent in dishList:
-    #     dish_id = dishOneContent.id
-    #     exists_dish_tags = DishTag.objects.filter(dishId=dish_id)
-    #     tagsList = [one.tag1 for one in exists_dish_tags]
-    #     dish_and_tags_dict = {
-    #         'dishId': dishOneContent.id,
-    #         'dishName': dishOneContent.dishName,
-    #         'firstCategoryName': dishOneContent.firstCategoryId.categoryName,
-    #         'secondCategoryName': dishOneContent.secondCategoryId.categoryName,
-    #         'stockQuantity': dishOneContent.stockQuantity,
-    #         'dishStatus': dishOneContent.dishStatus,
-    #         'imageUrl': dishOneContent.imageUrl,
-    #         'tagsList': tagsList,
-    #     }
-    #     all_results.append(dish_and_tags_dict)
-    # #
-    # paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
-    # paginated_results = paginator.get_page(int(request.GET.get('page', 1)))
-    # page_results = [result for result in paginated_results]
-    #
-    # return Result_page.success(data=page_results, total=len(all_results))
-    data_list_json = [{'id': 1, 'name': 'hbs', 'status': 12},
-                      {'id': 2, 'name': 'hbs1', 'status': 121},
-                      {'id': 3, 'name': 'hbs21', 'status': 1112},
-                      {'id': 4, 'name': 'hbs', 'status': 12},
-                      {'id': 5, 'name': 'hbs1', 'status': 121},
-                      {'id': 6, 'name': 'hbs21', 'status': 1112},
-                      {'id': 7, 'name': 'hbs', 'status': 12},
-                      {'id': 8, 'name': 'hbs1', 'status': 121},
-                      {'id': 9, 'name': 'hbs21', 'status': 1112},
-                      {'id': 10, 'name': 'hbs', 'status': 12},
-                      {'id': 11, 'name': 'hbs1', 'status': 121},
-                      {'id': 13, 'name': 'hbs21', 'status': 1112}]
-    paginator = Paginator(data_list_json, int(request.GET.get('pageSize', 10)))
-    aa = int(request.GET.get('page', 1))
-    paginated_results = paginator.get_page(int(request.GET.get('page', 1)))
+
+    try:
+        query = {}
+        dishName = request.GET.get('dishName')
+        firstCategoryId = request.GET.get('firstCategoryId')
+        if dishName:
+            query['dishName__contains'] = dishName
+        if firstCategoryId:
+            query['firstCategoryId_id'] = firstCategoryId
+    except:
+        return Result.error('请检查输入项！')
+
+    all_results = []
+    dishList = Dish.objects.filter(**query)
+    for dishOneContent in dishList:
+        dish_id = dishOneContent.id
+        exists_dish_tags = DishTag.objects.filter(dishId=dish_id)
+        tagsList = [one.tag1 for one in exists_dish_tags]
+        if dishOneContent.dishStatus:
+            dishStatus_value = '在售'
+        else:
+            dishStatus_value = '停售'
+        dish_and_tags_dict = {
+            'dishId': dishOneContent.id,
+            'dishOrder': dishOneContent.dishOrder,
+            'dishName': dishOneContent.dishName,
+            'firstCategoryName': dishOneContent.firstCategoryId.categoryName,
+            'secondCategoryName': dishOneContent.secondCategoryId.categoryName,
+            'stockQuantity': dishOneContent.stockQuantity,
+            'dishStatus': dishStatus_value,
+            'imageUrl': dishOneContent.imageUrl,
+            'tagsList': ' '.join(tagsList),
+        }
+        all_results.append(dish_and_tags_dict)
+    paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
+    page_number = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(page_number)
     page_results = [result for result in paginated_results]
-    return render(request, 'dish_page.html', {'success': True, 'data': page_results, 'total': len(data_list_json)})
 
-
-    #
-    # paginator = Paginator(data_list_json, 10)  # 每页显示10条数据
-    # page_number = request.GET.get('page')  # 获取页码，默认为第一页
-    # page_obj = paginator.get_page(page_number)
-    # page_obj_list = list(page_obj)
-    #
-    # return render(request, 'dish_page.html', {'data_list_json': page_obj_list, 'page_obj': data_list_json})
+    return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
+                               page_html='dishPage.html', request=request)
 
 
 @api_view(['GET'])

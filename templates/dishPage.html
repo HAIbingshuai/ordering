@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        .layui-card {
+            text-align: left;
+        }
+
+        .layui-card-body {
+            margin-left: 0;
+        }
+
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+
+        .layui-inline {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 10px;
+        }
+    </style>
+    <!-- 查询 -->
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <form class="layui-form" action="" method="GET">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">菜品名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" lay-verify="required" placeholder="请输入菜品名称"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">菜品分类</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" lay-verify="required" placeholder="菜品分类"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">查询</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- table -->
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="formSearch">新增菜品</button>
+                </div>
+            </div>
+            <table id="dataList" lay-filter="dataList"></table>
+        </div>
+    </div>
+
+    <div id="pagination" style="margin-top: 20px;"></div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/layui/2.6.8/layui.js"></script>
+
+    <script>
+        layui.use(['form', 'table', 'laypage'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            var laypage = layui.laypage;
+
+            table.render({
+                elem: '#dataList',
+                data: {{ data | safe }},
+                limit: 10,
+                cols: [[
+                    {field: 'dishOrder', title: '菜品顺序'},
+                    {field: 'dishName', title: '菜品名称'},
+                    {field: 'firstCategoryName', title: '一级分类'},
+                    {field: 'secondCategoryName', title: '二级分类'},
+                    {field: 'imageUrl', title: '菜品图片'},
+                    {field: 'stockQuantity', title: '库存'},
+                    {field: 'dishStatus', title: '状态'},
+                    {field: 'tagsList', title: '菜单标签'},
+                    {field: '操作', title: '操作', toolbar: '#btnGroup'}
+                ]]
+            });
+
+            // 分页
+            laypage.render({
+                elem: 'pagination',
+                count: {{ count }},
+                limit: 10,
+                layout: ['prev', 'page', 'next', 'skip'],
+                jump: function (obj, first) {
+                    if (!first) {
+                        $.ajax({
+                            url: '/dl_order/order/getDishList',  // 替换为你的后端接口 URL
+                            type: 'GET',
+                            data: {
+                                page: obj.curr,
+                                pageSize: obj.limit
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    // 更新表格数据
+                                    table.reload('dataList', {
+                                        data: res.data
+                                    });
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                            }
+                        });
+                    }
+                }
+            });
+
+        });
+    </script>
+
+    <script type="text/html" id="btnGroup">
+        <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
+        <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
+        <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>
+    </script>
+{% endblock %}
