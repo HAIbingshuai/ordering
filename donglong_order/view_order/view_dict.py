@@ -103,6 +103,19 @@ def get_dict_data_list(request):
                        })
     all_list.append(f_list)
     all_list.append(s_list)
-    return Result_page.success(data=all_list)
+    return Result.success(data=all_list)
 
 
+@api_view(['GET'])
+def get_CategoryId_list(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+
+    first_list = FirstCategory.objects.filter()
+    all_list = [
+        {
+            "firstCategoryId": one.id,
+            "categoryName": one.categoryName,
+        } for one in first_list
+    ]
+    return Result.success(data=all_list)

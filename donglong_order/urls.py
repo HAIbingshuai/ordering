@@ -7,6 +7,7 @@ from .view_order.view_rest import *
 from .view_order.view_admin import *
 from .view_order.view_login import *
 from .view_order.view_data import *
+
 urlpatterns = [
     # 数据面板
     path('order/getData', get_data, name='get_data'),
@@ -64,6 +65,6 @@ urlpatterns = [
     path('order/updateDictData', update_dict_data, name='update_dict_data'),
     path('order/delDictData', del_dict_data, name='del_dict_data'),
     path('order/getDictDataList', get_dict_data_list, name='get_dict_data_list'),
-
+    path('order/getCategoryIdList', get_CategoryId_list, name='get_CategoryId_list'),
 
 ]

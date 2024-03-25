@@ -6,7 +6,6 @@ from ..utils.judgment_of_null_void import judgment_void, judgment_null
 from ..utils.result import *
 from django.core.paginator import Paginator
 from django.utils import timezone
-from django.shortcuts import render
 
 
 @api_view(['POST'])
@@ -229,7 +228,7 @@ def get_dish_list(request):
     page_results = [result for result in paginated_results]
 
     return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
-                               page_html='dishPage.html', request=request)
+                               page_html='dishPage_temp.html', request=request)
 
 
 @api_view(['GET'])
