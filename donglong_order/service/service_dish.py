@@ -40,3 +40,27 @@ def service_delete_dish(dish_id):
 
 def service_delete_dishTag(dish_id):
     DishTag.objects.filter(dishId=dish_id).delete()
+
+
+def service_restart_order_dish():
+    # 遍历所有菜品
+    exists_dish_objs = Dish.objects.filter()
+    # 按照 dishOrder 由小到大 排序
+    sorted_dish_tags_objs = exists_dish_objs.order_by('dishOrder')
+    # 遍历排序的数据，更新每个数据的dishOrder
+    for index, dish_tag_obj in enumerate(sorted_dish_tags_objs, start=1):
+        dish_tag_obj.dishOrder = index
+        dish_tag_obj.save(update_fields=['dishOrder'])
+
+
+def service_top_dish(dish_id):
+    # 尝试获取指定ID的菜品对象，如果不存在则返回 None
+    exists_dish_objs = Dish.objects.filter(id=dish_id).first()
+    if exists_dish_objs is not None:
+        # 获取原始的 dishOrder
+        orgin_dishOrder = exists_dish_objs.dishOrder
+        # 更新其他菜品的 dishOrder，使其依次顺延
+        Dish.objects.filter(dishOrder__lt=orgin_dishOrder).update(dishOrder=F('dishOrder') + 1)
+        # 将指定菜品的 dishOrder 设置为 1，即置顶
+        exists_dish_objs.dishOrder = 1
+        exists_dish_objs.save(update_fields=['dishOrder'])

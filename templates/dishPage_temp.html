@@ -143,7 +143,7 @@
                 <label class="layui-form-label">上传图片</label>
                 <div class="layui-input-block">
                     <button type="button" class="layui-btn" id="uploadBtn">上传图片</button>
-                    <input type="hidden" id="imageUrl" name="imageUrl" autocomplete="off" class="layui-input">
+                    <input type="hidden" id="imageUrl" name="file" autocomplete="off" class="layui-input">
                     <div id="imagePreview" style="margin-top: 10px;"></div> <!-- 图片预览区域 -->
                 </div>
             </div>
@@ -400,17 +400,18 @@
             {#点击图片上传按钮#}
             upload.render({
                 elem: '#uploadBtn',
-                url: '/dl_order/order/uploadImage', // 替换为实际的上传接口 URL
+                url: 'https://third.zhihuilonghu.com/file/api/upload', // 替换为实际的上传接口 URL
                 accept: 'images', // 接受文件类型
                 auto: true, // 自动上传
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}'  // 使用 Django 提供的模板标签获取 CSRF 令牌
-                },
+                data:{filePath:'order'},
+                {#headers: {#}
+                {#    'X-CSRFToken': '{{ csrf_token }}'  // 使用 Django 提供的模板标签获取 CSRF 令牌#}
+                {# },#}
                 done: function (res) {
-                    if (res.code === 0) {
-                        $('#imageUrl').val(res.data.url); // 将图片链接填入隐藏域
-                        $('#imagePreview').html('<img src="' + res.data.url + '" alt="预览图片" style="max-width: 100px; max-height: 100px;">'); // 显示图片预览
-                        layer.msg('上传成功', {icon: 1});
+                    console.log(res)
+                    if (res.code === 200) {
+                        $('#imageUrl').val(res.data.fileUrl); // 将图片链接填入隐藏域
+                        $('#imagePreview').html('<img src="' + res.data.fileUrl + '" alt="预览图片" style="max-width: 100px; max-height: 100px;">'); // 显示图片预览
                         layer.msg('上传成功', {icon: 1});
                     } else {
                         layer.msg('上传失败', {icon: 2});

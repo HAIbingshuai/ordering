@@ -6,55 +6,52 @@ from ..utils.judgment_of_null_void import judgment_void, judgment_null
 from ..utils.result import *
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
+# @csrf_exempt
 @api_view(['POST'])
 @transaction.atomic
 def add_dish(request):
     if request.method != 'POST':
         return Result.error('无效的请求方法')
-    # -------------------------
-    # 第一部分：图片处理
-    # 第二部分：dish建立
-    # 第三部分：标签建立
-    # -------------------------
-
     required_void_fields = ['dishName', 'dishName', 'firstCategoryId', 'secondCategoryId', 'stockQuantity',
-                            'dishStatus',
-                            'dineInDisplayStatus', 'takeoutDisplayStatus', 'image', 'tagsList']
+                            'dishStatus', 'dineInDisplayStatus', 'takeoutDisplayStatus', 'imageUrl', 'tagsList']
     required_null_fields = required_void_fields
-    # 判断无字段类
-    Res_boo1, Res_str1 = judgment_void(required_void_fields, request)
+
+    Res_boo1, Res_str1 = judgment_void(required_void_fields, request)  # 判断无字段类
     if not Res_boo1:
         return Result.error(Res_str1)
-    # 判断空类
-    Res_boo2, Res_str2 = judgment_null(required_null_fields, request)
+
+    Res_boo2, Res_str2 = judgment_null(required_null_fields, request)  # 判断空类
     if not Res_boo2:
         return Result.error(Res_str2)
 
     try:
-        # @1
-        imageUrl = get_pic_url(request.data.get('image'))
-        dishOrder = 1
         dish_dict = {
-            'dishOrder': dishOrder,  # 新增菜品默认排序为1
+            # 前端获取项
             'dishName': request.data.get('dishName'),
             'stockQuantity': request.data.get('stockQuantity'),
             'dishStatus': request.data.get('dishStatus'),
             'dineInDisplayStatus': request.data.get('dineInDisplayStatus'),
             'takeoutDisplayStatus': request.data.get('takeoutDisplayStatus'),
-            'imageUrl': imageUrl,
-            'createdAt': timezone.localtime(),  # + timezone.timedelta(hours=8)
+            'imageUrl': request.data.get('imageUrl'),
             'firstCategoryId_id': request.data.get('firstCategoryId'),
             'secondCategoryId_id': request.data.get('secondCategoryId'),
+            # 后端生成项
+            'dishOrder': 1,  # 新增菜品默认排序为1
             'createdBy_id': 1,  # request.user.id,
+            'restaurantId_id': 1,
+            'createdAt': timezone.localtime(),  # + timezone.timedelta(hours=8)
         }
+
         dish = service_add_dish(dish_dict)
-        # @3
-        service_add_dishTag(dish.id, request.data.get('tagsList'))
+        service_add_dishTag(dish.id, json.loads(request.data.get('tagsList')))
 
     except Exception as e:
         transaction.set_rollback(True)  # 回执
+        print(str(e))
         return Result.error('xx新建失败！请查看：' + str(e))
     return Result.success('xx新建完成！')
 
@@ -66,7 +63,7 @@ def update_dish(request):
         return Result.error('无效的请求方法')
     required_void_fields = ['dishId', 'dishName', 'dishName', 'firstCategoryId', 'secondCategoryId',
                             'stockQuantity', 'dishStatus', 'dineInDisplayStatus', 'takeoutDisplayStatus',
-                            'image', 'tagsList']
+                            'imageUrl', 'tagsList']
     required_null_fields = required_void_fields
     # 判断无字段类
     Res_boo1, Res_str1 = judgment_void(required_void_fields, request)
@@ -78,7 +75,6 @@ def update_dish(request):
         return Result.error(Res_str2)
 
     try:
-        imageUrl = get_pic_url(request.data.get('image'))
         dish_dict = {
             'id': request.data.get('dishId'),
             'dishName': request.data.get('dishName'),
@@ -88,17 +84,15 @@ def update_dish(request):
             'dishStatus': request.data.get('dishStatus'),
             'dineInDisplayStatus': request.data.get('dineInDisplayStatus'),
             'takeoutDisplayStatus': request.data.get('takeoutDisplayStatus'),
-            'imageUrl': imageUrl,
+            'imageUrl': request.data.get('imageUrl'),
             'lastUpdatedBy_id': 1,  # request.user.id,
             'updatedAt': timezone.localtime()  # + timezone.timedelta(hours=8)
         }
 
         service_update_dish(dish_dict)
-        service_add_dishTag(dish_dict['id'], request.data.get('tagsList'))
-
+        service_add_dishTag(dish_dict['id'], json.loads(request.data.get('tagsList')))
     except Exception as e:
-        # 回执
-        transaction.set_rollback(True)
+        transaction.set_rollback(True)  # 回执
         return Result.error('xxx信息更改失败！请查看：' + str(e))
     return Result.success('xxx信息更改完成！')
 
@@ -176,8 +170,27 @@ def del_dish(request):
 
     try:
         id = request.data.get('dishId')
-        service_delete_dish(id)
+        service_delete_dish(id)# 删除对应数据
+        service_restart_order_dish()
         service_delete_dishTag(id)
+    except Exception as e:
+        transaction.set_rollback(True)  # 回执
+        return Result.error('xxx信息删除失败！请查看：' + str(e))
+    return Result.success('xxx信息删除完成！')
+
+
+@api_view(['POST'])
+@transaction.atomic
+def top_dish(request):
+    if request.method != 'POST':
+        return Result.error('无效的请求方法')
+
+    if request.data.get('dishId') in ['', None]:
+        return Result.error('dishId不能为空！')
+
+    try:
+        id = request.data.get('dishId')
+        service_top_dish(id)
     except Exception as e:
         transaction.set_rollback(True)  # 回执
         return Result.error('xxx信息删除失败！请查看：' + str(e))
@@ -200,7 +213,7 @@ def get_dish_list(request):
     except:
         return Result.error('请检查输入项！')
 
-    all_results = []
+    all_results_ = []
     dishList = Dish.objects.filter(**query)
     for dishOneContent in dishList:
         dish_id = dishOneContent.id
@@ -214,14 +227,21 @@ def get_dish_list(request):
             'dishId': dishOneContent.id,
             'dishOrder': dishOneContent.dishOrder,
             'dishName': dishOneContent.dishName,
+            'firstCategoryId': dishOneContent.firstCategoryId.id,
             'firstCategoryName': dishOneContent.firstCategoryId.categoryName,
+            'secondCategoryId': dishOneContent.secondCategoryId.id,
             'secondCategoryName': dishOneContent.secondCategoryId.categoryName,
             'stockQuantity': dishOneContent.stockQuantity,
-            'dishStatus': dishStatus_value,
+            'dishStatusValue': dishStatus_value,
             'imageUrl': dishOneContent.imageUrl,
-            'tagsList': ' '.join(tagsList),
+            'tagsListValue': ' '.join(tagsList),
+            'tagsList': tagsList,
+            'dishStatus': int(dishOneContent.dishStatus),
+            'dineInDisplayStatus': int(dishOneContent.dineInDisplayStatus),
+            'takeoutDisplayStatus': int(dishOneContent.takeoutDisplayStatus)
         }
-        all_results.append(dish_and_tags_dict)
+        all_results_.append(dish_and_tags_dict)
+    all_results = sorted(all_results_, key=lambda x: x['dishOrder'], reverse=False)
     paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
     page_number = int(request.GET.get('page', 1))
     paginated_results = paginator.get_page(page_number)

@@ -9,7 +9,7 @@ class Result:
 
     @staticmethod
     def error(message):
-        return JsonResponse({'success': False, 'error_message': message})
+        return JsonResponse({'success': False, 'message': message})
 
 
 class Result_page:
@@ -30,4 +30,4 @@ class Result_page:
 
     @staticmethod
     def error(message, total=0):
-        return JsonResponse({'success': False, 'error_message': message, 'total': total})
+        return JsonResponse({'success': False, 'message': message, 'total': total})

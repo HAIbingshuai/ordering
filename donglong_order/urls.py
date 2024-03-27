@@ -1,6 +1,7 @@
 from django.urls import path
 from .view_order.veiws_order import *
 from .view_order.view_dict import *
+from .view_order.view_uploadImage import upload_image
 from .view_order.views_dish import *
 from .view_order.veiws_room import *
 from .view_order.view_rest import *
@@ -12,12 +13,12 @@ urlpatterns = [
     # 数据面板
     path('order/getData', get_data, name='get_data'),
 
-    # path('order/dashboard/', dashboard, name='dashboard'),
+    path('order/uploadImage', upload_image, name='upload_image'),
 
     # 菜品管理
     path('order/addDish', add_dish, name='add_dish'),  # ---增
     path('order/updateDish', update_dish, name='update_dish'),  # ---改
-    path('order/updateDishStatus', update_dish_status, name='update_dish_status'),  # ---改
+    path('order/topDish', top_dish, name='update_dish_status'),  # ---改
     path('order/updateDishOrder', update_dish_dishOrder, name='update_dish_dishOrder'),  # ---改
     path('order/delDish', del_dish, name='del_dish'),  # ---删
     path('order/getDishList', get_dish_list, name='order_dish_list'),  # ---查list
@@ -65,6 +66,7 @@ urlpatterns = [
     path('order/updateDictData', update_dict_data, name='update_dict_data'),
     path('order/delDictData', del_dict_data, name='del_dict_data'),
     path('order/getDictDataList', get_dict_data_list, name='get_dict_data_list'),
-    path('order/getCategoryIdList', get_CategoryId_list, name='get_CategoryId_list'),
+    path('order/getCategoryIdList', get_categoryId_list, name='get_CategoryId_list'),
+    path('order/getSecondCategoryIdList', get_secCategoryId_list, name='get_CategoryId_list'),
 
 ]

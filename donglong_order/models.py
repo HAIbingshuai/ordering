@@ -3,9 +3,6 @@ import uuid
 from django.utils import timezone
 
 
-
-
-
 # 订餐状态字典表
 class OrderStatus(models.Model):
     statusName = models.CharField(max_length=20, verbose_name="状态名称")
@@ -95,6 +92,29 @@ class Room(models.Model):
         verbose_name_plural = "包间"
 
 
+class Restaurant(models.Model):
+    restaurantName = models.CharField(max_length=100, verbose_name='餐厅名称')
+    restaurantType = models.CharField(max_length=50, verbose_name='餐厅类型')
+    openingHours = models.TextField(verbose_name='营业时间')
+    restaurantPhone = models.CharField(max_length=20, verbose_name='餐厅电话')
+    restaurantAddress = models.CharField(max_length=200, verbose_name='餐厅地址')
+    navigationCoordinates = models.CharField(max_length=50, verbose_name='导航坐标')
+    createdBy = models.ForeignKey(Manager, on_delete=models.CASCADE, verbose_name="创建人", db_column='createdBy',
+                                  related_name="rest_createdby")
+    createdAt = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updatedAt = models.DateTimeField(auto_now=True, verbose_name="修改时间")
+    lastUpdatedBy = models.ForeignKey(Manager, on_delete=models.SET_NULL, null=True, db_column='lastUpdatedBy',
+                                      verbose_name="最后修改人员", related_name="rest_lastUpdatedBy")
+
+    def __str__(self):
+        return self.restaurantName
+
+    class Meta:
+        db_table = "restaurant"
+        verbose_name = "餐厅表"
+        verbose_name_plural = "餐厅表"
+
+
 class Dish(models.Model):
     dishOrder = models.IntegerField(verbose_name="菜品顺序号")
     dishName = models.CharField(max_length=100, verbose_name="菜品名称")
@@ -114,6 +134,8 @@ class Dish(models.Model):
     updatedAt = models.DateTimeField(auto_now=True, null=True, verbose_name="修改时间")
     lastUpdatedBy = models.ForeignKey(Manager, on_delete=models.SET_NULL, null=True, db_column='lastUpdatedBy',
                                       verbose_name="最后修改人员", related_name="dish_lastUpdatedBy")
+    restaurantId = models.ForeignKey(Restaurant, on_delete=models.CASCADE, verbose_name="餐厅表",
+                                     db_column='RestaurantId')
 
     class Meta:
         db_table = "dish"
@@ -171,29 +193,6 @@ class DishTag(models.Model):
         db_table = "dish_tag"
         verbose_name = "菜品-标签"
         verbose_name_plural = "菜品-标签"
-
-
-class Restaurant(models.Model):
-    restaurantName = models.CharField(max_length=100, verbose_name='餐厅名称')
-    restaurantType = models.CharField(max_length=50, verbose_name='餐厅类型')
-    openingHours = models.TextField(verbose_name='营业时间')
-    restaurantPhone = models.CharField(max_length=20, verbose_name='餐厅电话')
-    restaurantAddress = models.CharField(max_length=200, verbose_name='餐厅地址')
-    navigationCoordinates = models.CharField(max_length=50, verbose_name='导航坐标')
-    createdBy = models.ForeignKey(Manager, on_delete=models.CASCADE, verbose_name="创建人", db_column='createdBy',
-                                  related_name="rest_createdby")
-    createdAt = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-    updatedAt = models.DateTimeField(auto_now=True, verbose_name="修改时间")
-    lastUpdatedBy = models.ForeignKey(Manager, on_delete=models.SET_NULL, null=True, db_column='lastUpdatedBy',
-                                      verbose_name="最后修改人员", related_name="rest_lastUpdatedBy")
-
-    def __str__(self):
-        return self.restaurantName
-
-    class Meta:
-        db_table = "restaurant"
-        verbose_name = "餐厅表"
-        verbose_name_plural = "餐厅表"
 
 
 class RestaurantCarousel(models.Model):

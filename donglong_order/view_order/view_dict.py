@@ -107,7 +107,7 @@ def get_dict_data_list(request):
 
 
 @api_view(['GET'])
-def get_CategoryId_list(request):
+def get_categoryId_list(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
 
@@ -115,6 +115,20 @@ def get_CategoryId_list(request):
     all_list = [
         {
             "firstCategoryId": one.id,
+            "categoryName": one.categoryName,
+        } for one in first_list
+    ]
+    return Result.success(data=all_list)
+
+@api_view(['GET'])
+def get_secCategoryId_list(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+
+    first_list = SecondCategory.objects.filter()
+    all_list = [
+        {
+            "secondCategoryId": one.id,
             "categoryName": one.categoryName,
         } for one in first_list
     ]
