@@ -147,23 +147,6 @@ SIMPLEUI_CONFIG = {
     # 设置是否开启动态菜单, 默认为False. 如果开启, 则会在每次用户登陆时刷新展示菜单内容。# 一般建议关闭。
     'dynamic': False,
     'menus': [
-        {
-            'app': 'auth',
-            'name': '用户管理',
-            'icon': 'fas fa-user-shield',
-            'models': [
-                {
-                    'name': '用户列表',
-                    'icon': 'fa fa-user',
-                    'url': 'auth/user/'
-                },
-                {
-                    'name': '用户组',
-                    'icon': 'fa fa-th-list',
-                    'url': 'auth/group/'
-                }
-            ]
-        },
 
         {
             'name': '订单管理',
@@ -171,14 +154,13 @@ SIMPLEUI_CONFIG = {
             'models': [
                 {
                     'name': '堂食订单',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/dl_order/order/getDishList',
+                    'url': '/dl_order/order/getOrderList',
                     'icon': 'fa fa-tasks'
                 },
                 {
                     'name': '包间预定',
                     # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/admin/donglong_order/manager/',
+                    'url': '/dl_order/order/getOrderList',
                     'icon': 'fa fa-tasks',
                 },
             ]
@@ -231,6 +213,23 @@ SIMPLEUI_CONFIG = {
                     'url': '/admin/tasks/task/',
                     'icon': 'fa fa-tasks'
                 },
+            ]
+        },
+        {
+            'app': 'auth',
+            'name': '用户管理',
+            'icon': 'fas fa-user-shield',
+            'models': [
+                {
+                    'name': '用户列表',
+                    'icon': 'fa fa-user',
+                    'url': 'auth/user/'
+                },
+                {
+                    'name': '用户组',
+                    'icon': 'fa fa-th-list',
+                    'url': 'auth/group/'
+                }
             ]
         },
 

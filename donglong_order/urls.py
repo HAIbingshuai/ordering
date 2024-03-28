@@ -1,7 +1,6 @@
 from django.urls import path
 from .view_order.veiws_order import *
 from .view_order.view_dict import *
-from .view_order.view_uploadImage import upload_image
 from .view_order.views_dish import *
 from .view_order.veiws_room import *
 from .view_order.view_rest import *
@@ -13,7 +12,14 @@ urlpatterns = [
     # 数据面板
     path('order/getData', get_data, name='get_data'),
 
-    path('order/uploadImage', upload_image, name='upload_image'),
+    # 订单管理
+    path('order/addOrder', add_order, name='add_order'),  # ---增
+    path('order/updateOrderStatus', update_order_status, name='update_order_status'),  # ---改
+    path('order/getOrderList', get_order_list, name='order_order_list'),  # ---查list
+    path('order/getDishListByOrderId', get_dish_list_by_orderId, name='get_dish_list_by_orderId'),
+    path('order/getOrderAndroomList', get_orderAndroom_list, name='get_orderAndroom_list'),  # ---改
+    path('order/getOrder', get_order, name='get_order'),  # ---查 one
+    path('order/delOrder', del_order, name='del_order'),  # ---删
 
     # 菜品管理
     path('order/addDish', add_dish, name='add_dish'),  # ---增
@@ -32,14 +38,6 @@ urlpatterns = [
     path('order/getRoomList', get_room_list, name='get_room_list'),  # ---查
     path('order/getRoom', get_room, name='get_room'),  # ---查
     path('order/getUsageOfRoom', get_usage_of_room, name='get_usage_of_room'),  # ---查
-
-    # 订单管理
-    path('order/addOrder', add_order, name='add_order'),  # ---增
-    path('order/updateOrderStatus', update_order_status, name='update_order_status'),  # ---改
-    path('order/getOrderList', get_order_list, name='order_order_list'),  # ---查list
-    path('order/getOrderAndroomList', get_orderAndroom_list, name='get_orderAndroom_list'),  # ---改
-    path('order/getOrder', get_order, name='get_order'),  # ---查 one
-    path('order/delOrder', del_order, name='del_order'),  # ---删
 
     # 餐厅
     path('order/getRest', get_rest, name='get_rest'),  # ---查餐厅one
@@ -68,5 +66,6 @@ urlpatterns = [
     path('order/getDictDataList', get_dict_data_list, name='get_dict_data_list'),
     path('order/getCategoryIdList', get_categoryId_list, name='get_CategoryId_list'),
     path('order/getSecondCategoryIdList', get_secCategoryId_list, name='get_CategoryId_list'),
+    path('order/getOrderStatusList', get_orderStatus_List, name='get_orderStatus_List'),
 
 ]

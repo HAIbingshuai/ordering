@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 from ..models import Order, OrderDish
 from django.utils import timezone
 from django.db.models import Q
+from datetime import datetime, timedelta
 
 
 @api_view(['POST'])
@@ -100,36 +101,75 @@ def get_order_list(request):
     query_params = {}
     if order_number:
         query_params['orderNumber__icontains'] = order_number
-    if created_at_start:
+    if created_at_start and created_at_end:
         query_params['createdAt__gte'] = created_at_start
-    if created_at_end:
         query_params['createdAt__lte'] = created_at_end
+    else:
+        # 一周之内
+        one_week_ago = datetime.now() - timedelta(days=14)
+        query_params['createdAt__gte'] = one_week_ago
+
     if order_status:
         query_params['orderStatus_id'] = order_status
-    query_params['roomId_id'] = 5
+    # query_params['roomId_id'] = 5
 
     # 执行查询
     orderList = Order.objects.filter(**query_params)
+    # 订单状态字典表
+    orderStatusDict = service_orderStatusDict()
+
     # 订单查询
-    all_results = []
+    all_results_ = []
     for orderOneContent in orderList:
+        # 菜品关联表-获取订单所有关联菜品
         order_dict = {
             'orderId': orderOneContent.id,
             'orderNumber': orderOneContent.orderNumber,
             'userName': orderOneContent.userId.userName,
+            'createdAt': orderOneContent.createdAt.strftime('%Y-%m-%d %H:%M:%S'),
             'phoneNumber': orderOneContent.userId.phoneNumber,
             'orderDishNum': len(OrderDish.objects.filter(orderId=orderOneContent.id)),
             'roomName': orderOneContent.roomId.roomName,
             'roomLocation': orderOneContent.roomId.roomLocation,
-            'orderStatus': orderOneContent.orderStatus.id
+            'orderStatus': orderOneContent.orderStatus.id,
+            'orderStatusValue': orderStatusDict[orderOneContent.orderStatus.id],
+            'scheduledTime': orderOneContent.scheduledDate.strftime('%Y-%m-%d'),
+            'scheduledTimeStart': orderOneContent.scheduledTimeStart.strftime('%H:%M:%S'),
+            'scheduledTimeEnd': orderOneContent.scheduledTimeEnd.strftime('%H:%M:%S')
         }
-        all_results.append(order_dict)
-
+        all_results_.append(order_dict)
+    all_results = sorted(all_results_, key=lambda x: x['createdAt'], reverse=True)
     paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
-    paginated_results = paginator.get_page(int(request.GET.get('page', 1)))
+    page_number = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(page_number)
     page_results = [result for result in paginated_results]
+    return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
+                               page_html='orderPage.html', request=request)
 
-    return Result_page.success(data=page_results, total=len(all_results))
+
+@api_view(['GET'])
+# @authentication_classes([CustomTokenAuthentication])
+# @permission_classes([IsAuthenticated])
+def get_dish_list_by_orderId(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+
+    orderId = request.GET.get('orderId')  # 订单编号
+    if orderId in [None, '', 'Nona']:
+        return []
+    orderdish_list = OrderDish.objects.filter(orderId=orderId)
+    return_data_ = [
+        {'dishOrder': orderdish.dishId.dishOrder,
+         'dish': orderdish.dishId.id,
+         'dishName': orderdish.dishId.dishName,
+         'firstcategoryName': orderdish.dishId.firstCategoryId.categoryName,
+         'secondcategoryName': orderdish.dishId.secondCategoryId.categoryName,
+         'dishNum': orderdish.dishNum
+         }
+        for orderdish in orderdish_list
+    ]
+    return_data = sorted(return_data_, key=lambda x: x['dishOrder'], reverse=False)
+    return  Result.success(return_data)
 
 
 @api_view(['GET'])

@@ -1,4 +1,4 @@
-from ..models import Order, OrderDish
+from ..models import Order, OrderDish, OrderStatus
 
 
 def service_add_Order(order_dict):
@@ -25,3 +25,11 @@ def service_delete_order(order_id):
 
 def service_delete_order_dish(order_id):
     OrderDish.objects.filter(orderId=order_id).delete()
+
+
+def service_orderStatusDict():
+    orderstatus_list = OrderStatus.objects.filter()
+    orderstatus_dict = {}
+    for one in orderstatus_list:
+        orderstatus_dict[one.id] = one.statusName
+    return orderstatus_dict

@@ -1,5 +1,5 @@
 from ..utils.result import Result, Result_page
-from ..models import FirstCategory, SecondCategory
+from ..models import FirstCategory, SecondCategory,OrderStatus
 from django.db.models import Q
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
@@ -133,3 +133,19 @@ def get_secCategoryId_list(request):
         } for one in first_list
     ]
     return Result.success(data=all_list)
+
+
+@api_view(['GET'])
+def get_orderStatus_List(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+
+    first_list = OrderStatus.objects.filter()
+    all_list = [
+        {
+            "orderStatusId": one.id,
+            "statusName": one.statusName,
+        } for one in first_list
+    ]
+    return Result.success(data=all_list)
+

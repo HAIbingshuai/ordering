@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        .layui-card {
+            text-align: left;
+        }
+
+        .layui-card-body {
+            margin-left: 0;
+        }
+
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+
+        .layui-form-add-item {
+            margin-bottom: 20px;
+        }
+
+        .layui-inline {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 10px;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+
+        .layui-btn-lightpurple {
+            background-color: #6a1b9a; /* 设置按钮背景颜色为浅紫色 */
+            color: #fff; /* 设置文字颜色为深紫色 */
+        }
+
+        {##}
+        {#.layui-btn-lightpurple:hover {#}
+        {#    background-color: #D1C4E9; /* 鼠标悬停时按钮背景颜色变化 */#}
+        {# }#}
+    </style>
+
+    <!-- 查询 -->
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <form class="layui-form" id="searchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">订单编号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="orderNumber" placeholder="请输入订单编号"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label">下单时间</label>
+                        <div class="layui-input-inline" style="width: 300px;">
+                            <input type="text" name="timeRange" placeholder="请选择时间范围"
+                                   autocomplete="off" class="layui-input" id="timeRange">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">订单状态</label>
+                        <div class="layui-input-inline">
+                            <select name="orderStatusId"></select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <button type="button" class="layui-btn" id="searchBtn">查询</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- table -->
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <table id="dataList" lay-filter="dataList"></table>
+        </div>
+    </div>
+    <!-- 分页控件 -->
+    <div id="pagination" style="margin-top: 20px;"></div>
+
+    <script src="https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/layui/2.6.8/layui.js"></script>
+
+    <script>
+        layui.use(['form', 'table', 'laypage', 'layer', 'laydate'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            var laypage = layui.laypage;
+            var layer = layui.layer;
+            var laydate = layui.laydate;
+
+            // 初始化日期时间选择器
+            laydate.render({
+                elem: '#timeRange',
+                type: 'datetime', // 设置日期时间选择器的类型为日期时间
+                range: true, // 开启时间范围选择
+                theme: 'molv' // 设置主题样式
+            });
+
+            {#下拉框#}
+            $.ajax({
+                url: '/dl_order/order/getOrderStatusList',  // 替换为你的后端接口 URL
+                type: 'GET',
+                success: function (res) {
+                    var data = res.data;
+                    var selectOptions = '<option value="">所有</option>';
+                    for (var i = 0; i < data.length; i++) {
+                        selectOptions += '<option value="' + data[i].orderStatusId + '">' + data[i].statusName + '</option>';
+                    }
+                    $('select[name="orderStatusId"]').html(selectOptions);
+                    form.render('select');  // 重渲染下拉选择框
+                },
+                error: function (err) {
+                    console.error('Error fetching data:', err);
+                }
+            });
+
+            {#table#}
+            table.render({
+                elem: '#dataList',
+                data: {{ data | safe }},
+                limit: 10,
+                cols: [[
+                    {field: 'orderNumber', title: '订单编号'},
+                    {field: 'createdAt', title: '下单时间'},
+                    {field: 'userName', title: '姓名'},
+                    {field: 'phoneNumber', title: '手机号'},
+                    {field: 'orderDishNum', title: '菜品数量'},
+                    {field: 'roomLocation', title: '位置'},
+                    {
+                        field: 'orderStatus',
+                        title: '状态',
+                        templet: function (d) {
+                            if (d.orderStatus === 1) {
+                                return '<span style="color: green;">未接单</span>';
+                            } else if (d.orderStatus === 2) {
+                                return '<span style="color: blue;">已经接单</span>';
+                            } else if (d.orderStatus === 3) {
+                                return '<span style="color: orange;">正在配送</span>';
+                            } else if (d.orderStatus === 4) {
+                                return '<span style="color: gray;">已完成</span>';
+                            } else if (d.orderStatus === 5) {
+                                return '<span style="color: red;">取消</span>';
+                            } else {
+                                return d.orderStatus;
+                            }
+                        }
+                    },
+                    {
+                        field: '操作', title: '操作',
+                        templet: function (d) {
+                            if (d.orderStatus === 1) {
+                                return '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>' +
+                                    '<button class="layui-btn layui-btn-xs" lay-event="accept">接单</button>' +
+                                    '<button class="layui-btn layui-btn-normal layui-btn-danger  layui-btn-xs" lay-event="cancel">取消</button>';
+                            } else if (d.orderStatus === 2) {
+                                return '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>' +
+                                    '<button class="layui-btn layui-btn-xs layui-btn-lightpurple" lay-event="deliver">配送</button>' +
+                                    '<button class="layui-btn layui-btn-normal layui-btn-danger  layui-btn-xs" lay-event="cancel">取消</button>';
+                            } else if (d.orderStatus === 3) {
+                                return '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>' +
+                                    '<button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="complete">完成</button>' +
+                                    '<button class="layui-btn layui-btn-normal layui-btn-danger  layui-btn-xs" lay-event="cancel">取消</button>';
+                            } else {
+                                return '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>'
+                            }
+                        }, width: 300, align: 'center'
+                    },
+                ]]
+            });
+
+            {#分页#}
+            laypage.render({
+                elem: 'pagination',
+                count: {{ count }},
+                limit: 10,
+                layout: ['prev', 'page', 'next', 'skip'],
+                jump: function (obj, first) {
+                    if (!first) {
+                        $.ajax({
+                            url: '/dl_order/order/getOrderList',  // 替换为你的后端接口 URL
+                            type: 'GET',
+                            data: {
+                                page: obj.curr,
+                                pageSize: obj.limit
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    // 更新表格数据
+                                    table.reload('dataList', {
+                                        data: res.data
+                                    });
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                            }
+                        });
+                    }
+                }
+            });
+
+            {#点击查询按钮#}
+            table.on('tool(dataList)', function (obj) {
+                var data = obj.data;
+                {#查看#}
+                if (obj.event === 'view') {
+                    layer.open({
+                        type: 1,
+                        title: '订单详情',
+                        content: '<div style="padding: 20px;">' +
+                            '<div>订单编号：' + data.orderNumber + '</div>' +
+                            '<div>下单时间：' + data.createdAt + '</div>' +
+                            '<div>姓名：' + data.userName + '</div>' +
+                            '<div>手机号：' + data.phoneNumber + '</div>' +
+                            '<div>菜品数量：' + data.orderDishNum + '</div>' +
+                            '<div>位置：' + data.roomLocation + '</div>' +
+                            '<div>状态：' + data.orderStatusValue + '</div>' +
+                            '<div>就餐日期：' + data.scheduledTime + '</div>' +
+                            '<div>就餐时间：' + data.scheduledTimeStart + '-' + data.scheduledTimeEnd + '</div>' +
+                            '<div style="margin-top: 20px;">菜品信息：</div>' +
+                            '<div id="dishesTableContainer"></div>' + // 菜品信息表格容器
+                            '</div>',
+                        area: ['800px', '600px'],
+                        success: function () {
+                            // 成功弹出窗口后获取菜品信息数据并更新表格
+                            fetchDishesData(data.orderId);
+                        }
+                    });
+                }
+                {#接单#}
+                if (obj.event === 'accept') {
+                    layer.confirm('确定该订单进行接单？', function (index) {
+                        $.ajax({
+                            url: '/dl_order/order/updateOrderStatus', // 替换为实际的编辑接口 URL
+                            type: 'POST',
+                            data: {
+                                orderId: data.orderId,
+                                orderStatus: 2
+                            },
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('操作成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getOrderList', // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        success: function (res) {
+                                            if (res.success) {
+                                                // 更新表格数据
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('操作失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('操作失败，请重试');
+                            }
+                        });
+                        layer.close(index); // 关闭确认框
+                    });
+                }
+                {#配送#}
+                if (obj.event === 'deliver') {
+                    layer.confirm('确定该订单进行配送？', function (index) {
+                        $.ajax({
+                            url: '/dl_order/order/updateOrderStatus', // 替换为实际的编辑接口 URL
+                            type: 'POST',
+                            data: {
+                                orderId: data.orderId,
+                                orderStatus: 3
+                            },
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('操作成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getOrderList', // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        success: function (res) {
+                                            if (res.success) {
+                                                // 更新表格数据
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('操作失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('操作失败，请重试');
+                            }
+                        });
+                        layer.close(index); // 关闭确认框
+                    });
+                }
+                {#完成#}
+                if (obj.event === 'complete') {
+                    layer.confirm('确定该订单已经完成？', function (index) {
+                        $.ajax({
+                            url: '/dl_order/order/updateOrderStatus', // 替换为实际的编辑接口 URL
+                            type: 'POST',
+                            data: {
+                                orderId: data.orderId,
+                                orderStatus: 4
+                            },
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('操作成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getOrderList', // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        success: function (res) {
+                                            if (res.success) {
+                                                // 更新表格数据
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('操作失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('操作失败，请重试');
+                            }
+                        });
+                        layer.close(index); // 关闭确认框
+                    });
+                }
+                {#取消#}
+                if (obj.event === 'cancel') {
+                    layer.confirm('确定该订单进行取消？', function (index) {
+                        $.ajax({
+                            url: '/dl_order/order/updateOrderStatus', // 替换为实际的编辑接口 URL
+                            type: 'POST',
+                            data: {
+                                orderId: data.orderId,
+                                orderStatus: 5
+                            },
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('操作成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getOrderList', // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        success: function (res) {
+                                            if (res.success) {
+                                                // 更新表格数据
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('操作失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('操作失败，请重试');
+                            }
+                        });
+                        layer.close(index); // 关闭确认框
+                    });
+                }
+
+
+            });
+        });
+
+        // 获取菜品信息的异步请求示例
+        function fetchDishesData(id) {
+            $.ajax({
+                url: '/dl_order/order/getDishListByOrderId', // 替换为您的后端接口 URL
+                type: 'GET',
+                data: {
+                    orderId: id
+                },
+                dataType: 'json',
+                success: function (res) {
+                    if (res.success) {
+                        // 成功获取数据后更新菜品信息表格
+                        updateDishesTable(res.data);
+                    } else {
+                        console.error('Error fetching dishes data:', res.message);
+                    }
+                },
+                error: function (err) {
+                    console.error('Error fetching dishes data:', err);
+                }
+            });
+        }
+
+        // 更新菜品信息表格
+        function updateDishesTable(dishesData) {
+            var dishesTableHtml = '<div class="layui-table-container">' +
+                '<table class="layui-table layui-table-bordered">' +
+                '<thead>' +
+                '<tr>' +
+                '<th style="text-align: center;">序号</th>' +
+                '<th>菜品名称</th>' +
+                '<th>菜品分类</th>' +
+                '<th style="text-align: center;">数量</th>' +
+                '</tr>' +
+                '</thead>' +
+                '<tbody>';
+
+            for (var i = 0; i < dishesData.length; i++) {
+                dishesTableHtml += '<tr>' +
+                    '<td style="text-align: center;">' + (i + 1) + '</td>' +
+                    '<td>' + dishesData[i].dishName + '</td>' +
+                    '<td>' + dishesData[i].firstcategoryName + '|' + dishesData[i].secondcategoryName + '</td>' +
+                    '<td style="text-align: center;">' + dishesData[i].dishNum + '</td>' +
+                    '</tr>';
+            }
+
+            dishesTableHtml += '</tbody>' +
+                '</table>' +
+                '</div>';
+
+            // 插入更新后的菜品信息表格HTML代码
+            $('#dishesTableContainer').html(dishesTableHtml);
+        }
+
+
+    </script>
+
+{% endblock %}
