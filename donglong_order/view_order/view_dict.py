@@ -1,5 +1,5 @@
 from ..utils.result import Result, Result_page
-from ..models import FirstCategory, SecondCategory,OrderStatus
+from ..models import FirstCategory, SecondCategory, OrderStatus, Room
 from django.db.models import Q
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
@@ -120,6 +120,7 @@ def get_categoryId_list(request):
     ]
     return Result.success(data=all_list)
 
+
 @api_view(['GET'])
 def get_secCategoryId_list(request):
     if request.method != 'GET':
@@ -149,3 +150,21 @@ def get_orderStatus_List(request):
     ]
     return Result.success(data=all_list)
 
+
+@api_view(['GET'])
+def get_room_dict_List(request):
+    """
+    包间列表
+    :param request:
+    :return:
+    """
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+    room_list = Room.objects.filter(~Q(id=5))
+    all_list = [
+        {
+            "roomId": one.id,
+            "roomName": one.roomName,
+        } for one in room_list
+    ]
+    return Result.success(data=all_list)

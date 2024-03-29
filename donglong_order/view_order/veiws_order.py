@@ -6,9 +6,9 @@ from ..utils.judgment_of_null_void import *
 from ..utils.result import *
 from django.core.paginator import Paginator
 from ..models import Order, OrderDish
-from django.utils import timezone
 from django.db.models import Q
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 
 @api_view(['POST'])
@@ -95,7 +95,7 @@ def get_order_list(request):
     order_number = request.GET.get('orderNumber')  # 订单编号
     created_at_start = request.GET.get('createdAtStart')  # 下单开始日期
     created_at_end = request.GET.get('createdAtEnd')  # 下单结束日期
-    order_status = request.GET.get('orderStatus')  # 订单状态
+    order_status = request.GET.get('orderStatusId')  # 订单状态
 
     # 构建查询条件
     query_params = {}
@@ -106,12 +106,12 @@ def get_order_list(request):
         query_params['createdAt__lte'] = created_at_end
     else:
         # 一周之内
-        one_week_ago = datetime.now() - timedelta(days=14)
+        one_week_ago = timezone.now() - timedelta(days=30)
         query_params['createdAt__gte'] = one_week_ago
 
     if order_status:
         query_params['orderStatus_id'] = order_status
-    # query_params['roomId_id'] = 5
+    query_params['roomId_id'] = 5  # 堂食
 
     # 执行查询
     orderList = Order.objects.filter(**query_params)
@@ -148,8 +148,6 @@ def get_order_list(request):
 
 
 @api_view(['GET'])
-# @authentication_classes([CustomTokenAuthentication])
-# @permission_classes([IsAuthenticated])
 def get_dish_list_by_orderId(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
@@ -169,32 +167,34 @@ def get_dish_list_by_orderId(request):
         for orderdish in orderdish_list
     ]
     return_data = sorted(return_data_, key=lambda x: x['dishOrder'], reverse=False)
-    return  Result.success(return_data)
+    return Result.success(return_data)
 
 
 @api_view(['GET'])
-# @authentication_classes([CustomTokenAuthentication])
-# @permission_classes([IsAuthenticated])
-def get_orderAndroom_list(request):
+def get_orderandroom_list(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
 
     order_number = request.GET.get('orderNumber')  # 订单编号
     created_at_start = request.GET.get('createdAtStart')  # 下单开始日期
     created_at_end = request.GET.get('createdAtEnd')  # 下单结束日期
-    order_status_id = request.GET.get('orderStatus')  # 订单状态
+    order_status = request.GET.get('orderStatusId')  # 订单状态
     roomId = request.GET.get('roomId')  # 房间名称
 
     # 构建查询条件
     query = Q()
     if order_number:
         query &= Q(orderNumber__icontains=order_number)
-    if created_at_start:
+
+    if created_at_start and created_at_end:
         query &= Q(createdAt__gte=created_at_start)
-    if created_at_end:
         query &= Q(createdAt__lte=created_at_end)
-    if order_status_id:
-        query &= Q(orderStatus_id=order_status_id)
+    else:
+        one_week_ago = timezone.now() - timedelta(days=30)
+        query &= Q(createdAt__gte=one_week_ago)
+
+    if order_status:
+        query &= Q(orderStatus_id=order_status)
     if roomId:
         query &= Q(roomId_id=roomId)
     else:
@@ -202,31 +202,37 @@ def get_orderAndroom_list(request):
 
     # 执行查询
     orderList = Order.objects.filter(query)
+    # 订单状态字典表
+    orderStatusDict = service_orderStatusDict()
     # 订单查询
-    all_results = []
+    all_results_ = []
     for orderOneContent in orderList:
         order_dict = {
             'orderId': orderOneContent.id,
             'orderNumber': orderOneContent.orderNumber,
             'userName': orderOneContent.userId.userName,
             'phoneNumber': orderOneContent.userId.phoneNumber,
-            'createdAt': orderOneContent.createdAt,
+            'createdAt': orderOneContent.createdAt.strftime('%Y-%m-%d %H:%M:%S'),
             'orderDishNum': len(OrderDish.objects.filter(orderId=orderOneContent.id)),
             'roomName': orderOneContent.roomId.roomName,
             'roomLocation': orderOneContent.roomId.roomLocation,
             'orderStatus': orderOneContent.orderStatus.id,
             'numberDiners': orderOneContent.numberDiners,  # 就餐人数
-            'scheduledDate': orderOneContent.scheduledDate,  # 就餐日期
-            'scheduledTimeStart': orderOneContent.scheduledTimeStart,  # 就餐日期
-            'scheduledTimeEnd': orderOneContent.scheduledTimeEnd,  # 就餐日期
+            'scheduledDate': orderOneContent.scheduledDate.strftime('%Y-%m-%d'),  # 就餐日期
+            'scheduledDateTime': orderOneContent.scheduledTimeStart.strftime(
+                '%H:%M:%S') + '-' + orderOneContent.scheduledTimeEnd.strftime('%H:%M:%S'),
+            'orderStatusValue': orderStatusDict[orderOneContent.orderStatus.id],
+            'bz': orderOneContent.bz,
         }
-        all_results.append(order_dict)
-
+        all_results_.append(order_dict)
+    all_results = sorted(all_results_, key=lambda x: x['createdAt'], reverse=True)
     paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
-    paginated_results = paginator.get_page(int(request.GET.get('page', 1)))
+    page_number = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(page_number)
     page_results = [result for result in paginated_results]
 
-    return Result_page.success(data=page_results, total=len(all_results))
+    return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
+                               page_html='orderRoomPage.html', request=request)
 
 
 @api_view(['GET'])

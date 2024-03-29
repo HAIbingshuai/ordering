@@ -160,7 +160,7 @@ SIMPLEUI_CONFIG = {
                 {
                     'name': '包间预定',
                     # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/dl_order/order/getOrderList',
+                    'url': '/dl_order/order/getOrderAndRoomList',
                     'icon': 'fa fa-tasks',
                 },
             ]

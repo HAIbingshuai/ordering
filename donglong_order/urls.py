@@ -17,7 +17,7 @@ urlpatterns = [
     path('order/updateOrderStatus', update_order_status, name='update_order_status'),  # ---改
     path('order/getOrderList', get_order_list, name='order_order_list'),  # ---查list
     path('order/getDishListByOrderId', get_dish_list_by_orderId, name='get_dish_list_by_orderId'),
-    path('order/getOrderAndroomList', get_orderAndroom_list, name='get_orderAndroom_list'),  # ---改
+    path('order/getOrderAndRoomList', get_orderandroom_list, name='get_orderandroom_list'),  # ---改
     path('order/getOrder', get_order, name='get_order'),  # ---查 one
     path('order/delOrder', del_order, name='del_order'),  # ---删
 
@@ -67,5 +67,6 @@ urlpatterns = [
     path('order/getCategoryIdList', get_categoryId_list, name='get_CategoryId_list'),
     path('order/getSecondCategoryIdList', get_secCategoryId_list, name='get_CategoryId_list'),
     path('order/getOrderStatusList', get_orderStatus_List, name='get_orderStatus_List'),
+    path('order/getRoomDictList', get_room_dict_List, name='get_room_dict_List'),
 
 ]
