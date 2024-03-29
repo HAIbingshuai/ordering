@@ -248,7 +248,62 @@ def get_dish_list(request):
     page_results = [result for result in paginated_results]
 
     return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
-                               page_html='dishPage_temp.html', request=request)
+                               page_html='dishPage.html', request=request)
+
+
+@api_view(['GET'])
+def get_dish_class_list(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+
+    try:
+        query = {}
+        dishName = request.GET.get('dishName')
+        firstCategoryId = request.GET.get('firstCategoryId')
+        if dishName:
+            query['dishName__contains'] = dishName
+        if firstCategoryId:
+            query['firstCategoryId_id'] = firstCategoryId
+    except:
+        return Result.error('请检查输入项！')
+
+    all_results_ = []
+    dishList = Dish.objects.filter(**query)
+    for dishOneContent in dishList:
+        dish_id = dishOneContent.id
+        exists_dish_tags = DishTag.objects.filter(dishId=dish_id)
+        tagsList = [one.tag1 for one in exists_dish_tags]
+        if dishOneContent.dishStatus:
+            dishStatus_value = '在售'
+        else:
+            dishStatus_value = '停售'
+        dish_and_tags_dict = {
+            'dishId': dishOneContent.id,
+            'dishOrder': dishOneContent.dishOrder,
+            'dishName': dishOneContent.dishName,
+            'firstCategoryId': dishOneContent.firstCategoryId.id,
+            'firstCategoryName': dishOneContent.firstCategoryId.categoryName,
+            'secondCategoryId': dishOneContent.secondCategoryId.id,
+            'secondCategoryName': dishOneContent.secondCategoryId.categoryName,
+            'stockQuantity': dishOneContent.stockQuantity,
+            'dishStatusValue': dishStatus_value,
+            'imageUrl': dishOneContent.imageUrl,
+            'tagsListValue': ' '.join(tagsList),
+            'tagsList': tagsList,
+            'dishStatus': int(dishOneContent.dishStatus),
+            'dineInDisplayStatus': int(dishOneContent.dineInDisplayStatus),
+            'takeoutDisplayStatus': int(dishOneContent.takeoutDisplayStatus)
+        }
+        all_results_.append(dish_and_tags_dict)
+    all_results = sorted(all_results_, key=lambda x: x['dishOrder'], reverse=False)
+    paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
+    page_number = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(page_number)
+    page_results = [result for result in paginated_results]
+
+    return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
+                               page_html='dishClassPage.html', request=request)
+
 
 
 @api_view(['GET'])

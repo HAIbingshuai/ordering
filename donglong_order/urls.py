@@ -28,6 +28,7 @@ urlpatterns = [
     path('order/updateDishOrder', update_dish_dishOrder, name='update_dish_dishOrder'),  # ---改
     path('order/delDish', del_dish, name='del_dish'),  # ---删
     path('order/getDishList', get_dish_list, name='order_dish_list'),  # ---查list
+    path('order/getDishClassList', get_dish_class_list, name='get_dish_class_list'),  # ---查list
     path('order/getDish', get_dish, name='get_dish'),  # ---查 one
 
     # 房间管理

@@ -177,15 +177,9 @@ SIMPLEUI_CONFIG = {
                     'icon': 'fa fa-tasks'
                 },
                 {
-                    'name': '新增菜品',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/admin/tasks/task/',
-                    'icon': 'fa fa-tasks'
-                },
-                {
                     'name': '菜品分类',
                     # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/admin/tasks/task/',
+                    'url': '/dl_order/order/getDishClassList',
                     'icon': 'fa fa-tasks'
                 },
                 {
