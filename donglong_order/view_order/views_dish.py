@@ -170,7 +170,7 @@ def del_dish(request):
 
     try:
         id = request.data.get('dishId')
-        service_delete_dish(id)# 删除对应数据
+        service_delete_dish(id)  # 删除对应数据
         service_restart_order_dish()
         service_delete_dishTag(id)
     except Exception as e:
@@ -258,44 +258,65 @@ def get_dish_class_list(request):
 
     try:
         query = {}
-        dishName = request.GET.get('dishName')
         firstCategoryId = request.GET.get('firstCategoryId')
-        if dishName:
-            query['dishName__contains'] = dishName
+        secondCategoryId = request.GET.get('secondCategoryId')
         if firstCategoryId:
             query['firstCategoryId_id'] = firstCategoryId
+        if secondCategoryId:
+            query['secondCategoryId_id'] = secondCategoryId
     except:
         return Result.error('请检查输入项！')
-
-    all_results_ = []
-    dishList = Dish.objects.filter(**query)
-    for dishOneContent in dishList:
-        dish_id = dishOneContent.id
-        exists_dish_tags = DishTag.objects.filter(dishId=dish_id)
-        tagsList = [one.tag1 for one in exists_dish_tags]
-        if dishOneContent.dishStatus:
-            dishStatus_value = '在售'
+    # -------------第一 查询已经关联上的
+    second_dict_ = {}
+    dish_list = Dish.objects.filter(**query)
+    for i, dish_one in enumerate(dish_list):
+        firstCategoryName = dish_one.firstCategoryId.categoryName
+        secondCategoryName = dish_one.secondCategoryId.categoryName
+        key_new = secondCategoryName + '【' + firstCategoryName + '】'
+        if key_new in second_dict_.keys():
+            second_dict_[key_new].append(dish_one.dishName)
         else:
-            dishStatus_value = '停售'
-        dish_and_tags_dict = {
-            'dishId': dishOneContent.id,
-            'dishOrder': dishOneContent.dishOrder,
-            'dishName': dishOneContent.dishName,
-            'firstCategoryId': dishOneContent.firstCategoryId.id,
-            'firstCategoryName': dishOneContent.firstCategoryId.categoryName,
-            'secondCategoryId': dishOneContent.secondCategoryId.id,
-            'secondCategoryName': dishOneContent.secondCategoryId.categoryName,
-            'stockQuantity': dishOneContent.stockQuantity,
-            'dishStatusValue': dishStatus_value,
-            'imageUrl': dishOneContent.imageUrl,
-            'tagsListValue': ' '.join(tagsList),
-            'tagsList': tagsList,
-            'dishStatus': int(dishOneContent.dishStatus),
-            'dineInDisplayStatus': int(dishOneContent.dineInDisplayStatus),
-            'takeoutDisplayStatus': int(dishOneContent.takeoutDisplayStatus)
-        }
-        all_results_.append(dish_and_tags_dict)
-    all_results = sorted(all_results_, key=lambda x: x['dishOrder'], reverse=False)
+            second_dict_[key_new] = [
+                dish_one.firstCategoryId.id, dish_one.secondCategoryId.id, dish_one.dishName
+            ]
+    all_results_ = []
+    for key_s_f in second_dict_:
+        all_results_.append({
+            'first_id': second_dict_[key_s_f][0],
+            'second_id': second_dict_[key_s_f][1],
+            'secondCategoryName': key_s_f.split('【')[0],
+            'firstCategoryName': key_s_f.split('【')[1][:-1],
+            'dishNum': len(second_dict_[key_s_f]) - 2,
+            'dishNameList': '、'.join(second_dict_[key_s_f][2:])
+        })
+    # 查询未关联上的
+    fir_cate_list = FirstCategory.objects.filter()
+    for fir_cate in fir_cate_list:
+        dish_select_list = Dish.objects.filter(firstCategoryId_id=fir_cate.id)
+        if len(dish_select_list) == 0:
+            all_results_.append({
+                'first_id': fir_cate.id,
+                'second_id': 10000,  # 最大值
+                'secondCategoryName': '-',
+                'firstCategoryName': fir_cate.categoryName,
+                'dishNum': 0,
+                'dishNameList': ''
+            })
+
+    sec_cate_list = SecondCategory.objects.filter()
+    for sec_cate in sec_cate_list:
+        dish_select_list = Dish.objects.filter(secondCategoryId_id=sec_cate.id)
+        if len(dish_select_list) == 0:
+            all_results_.append({
+                'first_id': 10000,
+                'second_id': sec_cate.id,  # 最大值
+                'secondCategoryName': sec_cate.categoryName,
+                'firstCategoryName': '-',
+                'dishNum': 0,
+                'dishNameList': ''
+            })
+
+    all_results = sorted(all_results_, key=lambda x: x['first_id'], reverse=False)
     paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
     page_number = int(request.GET.get('page', 1))
     paginated_results = paginator.get_page(page_number)
@@ -303,7 +324,6 @@ def get_dish_class_list(request):
 
     return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
                                page_html='dishClassPage.html', request=request)
-
 
 
 @api_view(['GET'])

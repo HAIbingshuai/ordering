@@ -24,13 +24,13 @@ def add_dict_data(request):
         new_dict = {
             'categoryName': categoryName
         }
-        if categorytype == 1:
+        if int(categorytype) == 1:
             XXX = FirstCategory.objects.create(**new_dict)
         else:
             XXX = SecondCategory.objects.create(**new_dict)
     except Exception as e:
-        return Result.error("管理账号创建失败!：" + str(e))
-    return Result.success("管理账号创建成功!")
+        return Result.error("新增失败!：" + str(e))
+    return Result.success("分类新增成功!")
 
 
 @api_view(['POST'])
@@ -65,8 +65,8 @@ def update_dict_data(request):
 def del_dict_data(request):
     if request.method != 'POST':
         return Result.error('无效的请求方法')
-    categoryId = request.data.get('categoryId')
-    categorytype = request.data.get('categorytype')
+    categoryId = int(request.data.get('categoryId'))
+    categorytype = int(request.data.get('categorytype'))
     if categoryId in ['', None] or categorytype in ['', None]:
         return Result.error('请检查，categoryId、categorytype！')
     try:
@@ -75,8 +75,8 @@ def del_dict_data(request):
         else:
             SecondCategory.objects.create(id=categoryId).delete()
     except Exception as e:
-        return Result.error("管理账号创建失败!：" + str(e))
-    return Result.success("管理账号创建成功!")
+        return Result.error("分类删除失败!：" + str(e))
+    return Result.success("分类删除成功!")
 
 
 @api_view(['GET'])

@@ -53,12 +53,21 @@
             <form class="layui-form" id="searchForm">
                 <div class="layui-form-item">
                     <div class="layui-inline">
-                        <label class="layui-form-label">分类名称</label>
+                        <label class="layui-form-label">一级分类</label>
                         <div class="layui-input-inline">
-                            <input type="text" name="secondCategoryName" placeholder="请输入菜品名称"
-                                   autocomplete="off" class="layui-input">
+                            <select name="firstCategoryId">
+                            </select>
                         </div>
                     </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label">二级分类</label>
+                        <div class="layui-input-inline">
+                            <select name="secondCategoryId">
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="layui-inline">
                         <button type="button" class="layui-btn" id="searchBtn">查询</button>
                     </div>
@@ -66,34 +75,121 @@
             </form>
         </div>
     </div>
+
     <!-- 新增菜品目录 -->
-    <div id="addForm" style="display: none;">
+    <div id="seeForm" style="display: none;">
         <form class="layui-form">
             <div class="layui-form-add-item">
-                <label class="layui-form-label">分类名称</label>
+                <label class="layui-form-label">菜品名称</label>
                 <div class="layui-input-block">
-                    <input type="text" id="addsecondCategoryName" name="addsecondCategoryName" lay-verify="required"
-                           placeholder="请输入菜品名称"
+                    <input type="text" id="adddishName" name="adddishName" lay-verify="required" placeholder="请输入菜品名称"
                            autocomplete="off" class="layui-input">
                 </div>
             </div>
-
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">库存</label>
+                <div class="layui-input-block">
+                    <input type="number" id="stockQuantity" name="stockQuantity" lay-verify="required|number"
+                           placeholder="请输入库存(数字)" autocomplete="off" class="layui-input">
+                </div>
+            </div>
             <div class="layui-form-add-item">
                 <label class="layui-form-label">一级分类</label>
+                {#                <div class="layui-input-block">#}
                 <div class="layui-input-inline">
                     <select id="firstCategoryId" name="firstCategoryId" lay-verify="required">
                     </select>
                 </div>
             </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">二级分类</label>
+                <div class="layui-input-inline">
+                    <select id="secondCategoryId" name="secondCategoryId" lay-verify="required">
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">菜品标签</label>
+                <div class="layui-input-block tags-container">
+                    <div class="tag-input-group">
+                        <input type="text" class="layui-input tag-input" placeholder="请输入菜品标签1" autocomplete="off">
+                    </div>
+                    <div class="tag-input-group">
+                        <input type="text" class="layui-input tag-input" placeholder="请输入菜品标签2" autocomplete="off">
+                    </div>
+                    <div class="tag-input-group">
+                        <input type="text" class="layui-input tag-input" placeholder="请输入菜品标签3" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="dishStatus" name="dishStatus" lay-skin="switch" lay-text="在售|停售">
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">外卖点餐</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="takeoutDisplayStatus" name="takeoutDisplayStatus" lay-skin="switch"
+                           lay-text="显示|不显示">
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">包间预定</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="dineInDisplayStatus" name="dineInDisplayStatus" lay-skin="switch"
+                           lay-text="显示|不显示">
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">上传图片</label>
+                <div class="layui-input-block">
+                    <button type="button" class="layui-btn" id="uploadBtn">上传图片</button>
+                    <input type="hidden" id="imageUrl" name="file" autocomplete="off" class="layui-input">
+                    <div id="imagePreview" style="margin-top: 10px;"></div> <!-- 图片预览区域 -->
+                </div>
+            </div>
 
         </form>
     </div>
-    <!-- table -->
+
+
+    <!-- 新增1分级目录 -->
+    <div id="addFormOne" style="display: none;">
+        <form class="layui-form">
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">一级分类</label>
+                <div class="layui-input-block">
+                    <input type="text" id="addFirstcategoryName" name="addFirstcategoryName" lay-verify="required"
+                           placeholder="请输入一级分类名称"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- 新增2分级目录 -->
+    <div id="addFormTwo" style="display: none;">
+        <form class="layui-form">
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">二级分类</label>
+                <div class="layui-input-block">
+                    <input type="text" id="addSecondcategoryName" name="addSecondcategoryName" lay-verify="required"
+                           placeholder="请输入二级分类名称"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- table and add -->
     <div class="layui-card">
         <div class="layui-card-body">
             <div class="layui-form-item">
                 <div class="layui-inline">
-                    <button class="layui-btn" id="addBtn">新增二级分类</button>
+                    <button class="layui-btn" id="addBtnOne">新增一级分类</button>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" id="addBtnTwo">新增二级分类</button>
                 </div>
             </div>
             <table id="dataList" lay-filter="dataList"></table>
@@ -106,12 +202,12 @@
     <script src="https://cdn.staticfile.org/layui/2.6.8/layui.js"></script>
 
     <script>
-        layui.use(['form', 'table', 'laypage', 'layer', 'upload'], function () {
+        layui.use(['form', 'table', 'laypage', 'layer'], function () {
             var form = layui.form;
             var table = layui.table;
             var laypage = layui.laypage;
             var layer = layui.layer;
-            var upload = layui.upload;
+
             {#下拉框#}
             $.ajax({
                 url: '/dl_order/order/getCategoryIdList',  // 替换为你的后端接口 URL
@@ -152,12 +248,23 @@
                 data: {{ data | safe }},
                 limit: 10,
                 cols: [[
-                    {field: 'dishOrder', title: '顺序'},
+                    {#{field: 'Order', title: '顺序'},#}
                     {field: 'firstCategoryName', title: '一级分类名称'},
                     {field: 'secondCategoryName', title: '二级分类名称'},
-                    {field: 'dishCategoryNum', title: '菜品数量'},
+                    {field: 'dishNum', title: '菜品数量'},
                     {field: 'dishNameList', title: '菜品名称'},
-                    {field: '操作', title: '操作', toolbar: '#btnGroup', width: 300, align: 'center'},
+                    {
+                        field: '操作', title: '操作(要删除分类需清空菜品)',
+                        templet: function (d) {
+                            if (d.dishNum === 0) {
+                                return ' <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除分类</button>';
+                            } else {
+                                {#return '<button class="layui-btn layui-btn-danger layui-btn-xs"  lay-event=="deleteshow">删除</button>';#}
+                                return '/'
+                            }
+                        }, width: 300, align: 'center'
+                    },
+
                 ]]
             });
             {#分页#}
@@ -169,7 +276,7 @@
                 jump: function (obj, first) {
                     if (!first) {
                         $.ajax({
-                            url: '/dl_order/order/get_dish_class_list',  // 替换为你的后端接口 URL
+                            url: '/dl_order/order/getDishClassList',  // 替换为你的后端接口 URL
                             type: 'GET',
                             data: {
                                 page: obj.curr,
@@ -192,13 +299,15 @@
             });
             {#点击查询按钮#}
             $('#searchBtn').click(function () {
-                var secondCategoryName = $('input[name="secondCategoryName"]').val().trim();
+                var firstCategoryId = $('select[name="firstCategoryId"]').val();
+                var secondCategoryId = $('select[name="secondCategoryId"]').val();
 
                 $.ajax({
                     url: '/dl_order/order/getDishClassList',  // 替换为你的后端搜索接口 URL
                     type: 'GET',
                     data: {
-                        secondCategoryName: secondCategoryName
+                        firstCategoryId: firstCategoryId,
+                        secondCategoryId: secondCategoryId
                     },
                     success: function (res) {
                         if (res.success) {
@@ -213,26 +322,21 @@
                     }
                 });
             });
-            {#点击新增按钮#}
-            $('#addBtn').click(function () {
-                var secondCategoryName = $('input[name="secondCategoryName"]').val().trim();
+            {#点击新增按钮1#}
+            $('#addBtnOne').click(function () {
                 layer.open({
                     type: 1,
-                    title: '新增菜品',
-                    area: ['800px', '700px'],
-                    content: $('#addForm'), // 弹出新增页面的内容，即下面的表单
+                    title: '新增一级分类',
+                    area: ['500px', '180px'],
+                    content: $('#addFormOne'), // 弹出新增页面的内容，即下面的表单
                     btn: ['确认新增', '取消'],
                     yes: function (index, layero) {
-                        // 在这里可以处理确认新增的逻辑，发送 AJAX 请求等
-                        // 例如，获取新增菜品表单数据
                         var formData = {
-                            addsecondCategoryName: $('#addsecondCategoryName').val(),
-                            firstCategoryId: parseInt($('#firstCategoryId').val()),
+                            categorytype: 1,
+                            categoryName: $('#addFirstcategoryName').val(),
                         };
-
-                        // 发送 AJAX 请求进行新增操作，示例代码：
                         $.ajax({
-                            url: '/dl_order/order/addSecondCategory',  // 替换为你的后端新增接口 URL
+                            url: '/dl_order/order/addDictData',  // 替换为你的后端新增接口 URL
                             type: 'POST',
                             data: formData,
                             headers: {
@@ -248,9 +352,88 @@
                                     $.ajax({
                                         url: '/dl_order/order/getDishClassList',  // 替换为你的后端搜索接口 URL
                                         type: 'GET',
-                                        data: {
-                                            secondCategoryName: secondCategoryName,
+                                        success: function (res) {
+                                            if (res.success) {
+                                                // 更新表格数据
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
                                         },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+
+                                } else {
+                                    layer.msg('新增失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('新增失败，请重试');
+                            }
+                        });
+                    },
+                    btn2: function (index, layero) {
+                        $('#adddishName').val('').prop('readonly', false);
+                        $('#stockQuantity').val('').prop('readonly', false);
+                        $('#firstCategoryId').val('').prop('disabled', false);
+                        $('#secondCategoryId').val('').prop('disabled', false);
+                        $('#imageUrl').val('').prop('readonly', false);
+                        $('#dishStatus').prop('checked', false).prop('disabled', false);
+                        $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
+                        $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
+                        $('.tag-input').val('').prop('readonly', false);
+                        $('#uploadBtn').val('').show(); // 显示上传按钮
+                        form.render(); // 重新渲染表单
+                        layer.close(index);
+                    },
+                    cancel: function () {
+                        // 点击窗口右上角关闭按钮时的处理，同样恢复表单状态
+                        $('#adddishName').val('').prop('readonly', false);
+                        $('#stockQuantity').val('').prop('readonly', false);
+                        $('#firstCategoryId').val('').prop('disabled', false); // 设置为可用
+                        $('#secondCategoryId').val('').prop('disabled', false); // 设置为可用
+                        $('#imageUrl').val('').prop('readonly', false);
+                        $('#dishStatus').prop('checked', false).prop('disabled', false);
+                        $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
+                        $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
+                        $('.tag-input').val('').prop('readonly', false);
+                        $('#uploadBtn').show(); // 显示上传按钮
+                        form.render(); // 重新渲染表单
+                    }
+                });
+            });
+            $('#addBtnTwo').click(function () {
+                layer.open({
+                    type: 1,
+                    title: '新增二级分类',
+                    area: ['500px', '180px'],
+                    content: $('#addFormTwo'), // 弹出新增页面的内容，即下面的表单
+                    btn: ['确认新增', '取消'],
+                    yes: function (index, layero) {
+                        var formData = {
+                            categorytype: 2,
+                            categoryName: $('#addSecondcategoryName').val(),
+                        };
+                        $.ajax({
+                            url: '/dl_order/order/addDictData',  // 替换为你的后端新增接口 URL
+                            type: 'POST',
+                            data: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'  // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    // 新增成功后的处理，例如关闭弹窗、刷新表格等
+                                    layer.msg('新增成功');
+                                    layer.close(index); // 关闭弹窗
+                                    // 刷新表格数据等操作
+                                    // 执行查询操作，获取最新数据
+                                    $.ajax({
+                                        url: '/dl_order/order/getDishClassList',  // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
                                         success: function (res) {
                                             if (res.success) {
                                                 // 更新表格数据
@@ -308,47 +491,22 @@
             // 监听 查看菜品、编辑菜品、删除按钮 点击事件
             table.on('tool(dataList)', function (obj) {
                 var data = obj.data;
-                if (obj.event === 'view') {
-                    layer.open({
-                        type: 1,
-                        title: '查看菜品',
-                        area: ['800px', '700px'],
-                        content: $('#addForm'), // 弹出编辑页面的内容，即下面的表单
-                        btn: ['退出'],
-                        success: function (layero, index) {
-                            // 将菜品数据填充到表单中
-                            $('#firstCategoryId').val(data.firstCategoryId).prop('disabled', true);
-                            $('#secondCategoryId').val(data.secondCategoryId).prop('disabled', true);
-
-                            var dishNameUrlList = data.dishNameUrlList;// 填充菜品标签数据到输入框
-                            if (dishNameUrlList) {
-                                $('.tag-input').each(function (index) {
-                                    $(this).val(dishNameUrlList[index].dishName).prop('readonly', true); // 将对应标签数据填充到输入框，设置为只读
-                                    $('#imageUrl').val(dishNameUrlList[index].imageUrl).prop('readonly', true);
-                                    $('#imagePreview').html('<img src="' + dishNameUrlList[index].imageUrl + '" alt="预览图片" style="max-width: 100px; max-height: 100px;">'); // 显示图片预览
-                                });
-                            }
-                            form.render(); // 重新渲染表单
-                        },
-
-                        btn1: function (index, layero) {
-                            layer.close(index);
-                        },
-                        cancel: function () {
-                            form.render(); // 重新渲染表单
-                        }
-                    });
-                }
-
                 if (obj.event === 'delete') {
                     layer.confirm('确定要删除该条分类吗？', function (index) {
-                        var formData = {
-                            dishId: data.dishId, // 假设菜品数据中有菜品ID字段
+                        if (data.first_id === 1000) {
+                            var formData = {
+                                categorytype: 2,
+                                categoryId: data.second_id
+                            }
+                        } else {
+                            var formData = {
+                                categorytype: 1,
+                                categoryId: data.first_id
+                            }
                         }
 
-                        // 发送编辑请求，示例代码：
                         $.ajax({
-                            url: '/dl_order/order/delDish', // 替换为实际的编辑接口 URL
+                            url: '/dl_order/order/delDictData', // 替换为实际的编辑接口 URL
                             type: 'POST',
                             data: formData,
                             headers: {
@@ -359,7 +517,7 @@
                                     layer.msg('删除成功');
                                     layer.close(index);
                                     $.ajax({
-                                        url: '/dl_order/order/getDishList', // 替换为你的后端搜索接口 URL
+                                        url: '/dl_order/order/getDishClassList', // 替换为你的后端搜索接口 URL
                                         type: 'GET',
                                         data: {
                                             dishName: '', // 可根据实际需要传递查询条件
@@ -378,77 +536,25 @@
                                         }
                                     });
                                 } else {
-                                    layer.msg('编辑失败: ' + res.message);
+                                    layer.msg('删除失败: ' + res.message);
                                 }
                             },
                             error: function (err) {
                                 console.log(err);
-                                layer.msg('编辑失败，请重试');
+                                layer.msg('删除失败，请重试');
                             }
                         });
                         layer.close(index); // 关闭确认框
                     });
                 }
-                if (obj.event === 'topping') {
-                    layer.confirm('确定该菜品放在第一顺序吗？', function (index) {
-                        var formData = {
-                            dishId: data.dishId, // 假设菜品数据中有菜品ID字段
-                        }
-
-                        // 发送编辑请求，示例代码：
-                        $.ajax({
-                            url: '/dl_order/order/topDish', // 替换为实际的编辑接口 URL
-                            type: 'POST',
-                            data: formData,
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
-                            },
-                            success: function (res) {
-                                if (res.success) {
-                                    layer.msg('置顶成功');
-                                    layer.close(index);
-                                    $.ajax({
-                                        url: '/dl_order/order/getDishList', // 替换为你的后端搜索接口 URL
-                                        type: 'GET',
-                                        data: {
-                                            dishName: '', // 可根据实际需要传递查询条件
-                                            firstCategoryId: ''
-                                        },
-                                        success: function (res) {
-                                            if (res.success) {
-                                                // 更新表格数据
-                                                table.reload('dataList', {
-                                                    data: res.data
-                                                });
-                                            }
-                                        },
-                                        error: function (err) {
-                                            console.log(err);
-                                        }
-                                    });
-                                } else {
-                                    layer.msg('置顶失败: ' + res.message);
-                                }
-                            },
-                            error: function (err) {
-                                console.log(err);
-                                layer.msg('置顶失败，请重试');
-                            }
-                        });
-                        layer.close(index); // 关闭确认框
-                    });
+                if (obj.event === 'deleteshow') {
+                    layui.layer.msg('需要先清空菜品');
                 }
             });
+
         });
 
-
     </script>
 
-    <script type="text/html" id="btnGroup">
-        <div class="button-container">
-            <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>
-            <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
-        </div>
-    </script>
 
 {% endblock %}

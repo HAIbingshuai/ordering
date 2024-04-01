@@ -172,20 +172,17 @@ SIMPLEUI_CONFIG = {
             'models': [
                 {
                     'name': '菜品列表',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
                     'url': '/dl_order/order/getDishList',
                     'icon': 'fa fa-tasks'
                 },
                 {
                     'name': '菜品分类',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
                     'url': '/dl_order/order/getDishClassList',
                     'icon': 'fa fa-tasks'
                 },
                 {
                     'name': '每周菜品',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/admin/tasks/task/',
+                    'url': '/dl_order/order/getWeeklyDishesList',
                     'icon': 'fa fa-tasks'
                 },
             ]
