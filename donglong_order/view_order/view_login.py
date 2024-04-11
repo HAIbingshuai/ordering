@@ -1,7 +1,7 @@
 from django.utils import timezone
 from datetime import timedelta
 from ..utils.CustomTokenAuthentication import create_or_get_token
-from ..utils.result import Result
+from ..utils.result import Result,Result_page
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from ..utils.CustomTokenAuthentication import CustomTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -28,3 +28,5 @@ def admin_login(request):
     expires = now_time + timedelta(hours=3)
     token, created = create_or_get_token(manager, expires)
     return Result.success({'token': token.key, 'managerId': manager.id})
+    # return Result_page.success(data=[], paginator=[], page_number=0,
+    #                            page_html='dishPage.html', request=request)

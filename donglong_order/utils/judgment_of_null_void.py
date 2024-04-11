@@ -21,7 +21,7 @@ def judgment_null(required_fields, request):
     :return:
     """
     # 判断字段存在空值
-    empty_fields = [field for field in required_fields if request.data.get(field) in [None, '']]
+    empty_fields = [field for field in required_fields if request.data.get(field) in [None, '', 'NaN']]
     if empty_fields:
         Res_boo, Res_str = False, f'字段存在空值: {", ".join(empty_fields)}'
     else:

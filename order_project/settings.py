@@ -27,8 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Application definition
+LOGIN_URL = 'admin_login'
+AUTH_USER_MODEL = 'donglong_order.Manager'
 
+# Application definition
 INSTALLED_APPS = [
     'simpleui',
     "django.contrib.admin",
@@ -39,7 +41,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 'bootstrap4',
     'donglong_order.apps.DonglongOrderConfig',
-
 ]
 
 MIDDLEWARE = [
@@ -98,6 +99,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
+]
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    # 其他哈希器...
 ]
 
 # Internationalization
@@ -182,7 +189,7 @@ SIMPLEUI_CONFIG = {
                 },
                 {
                     'name': '每周菜品',
-                    'url': '/dl_order/order/getWeeklyDishesList',
+                    'url': '/dl_order/order/getDishWeeklyList',
                     'icon': 'fa fa-tasks'
                 },
             ]

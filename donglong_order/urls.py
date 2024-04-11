@@ -30,6 +30,8 @@ urlpatterns = [
     path('order/getDishList', get_dish_list, name='order_dish_list'),  # ---查list
     path('order/getDishClassList', get_dish_class_list, name='get_dish_class_list'),  # ---查list
     path('order/getDish', get_dish, name='get_dish'),  # ---查 one
+    # 菜品管理-每周菜品
+    path('order/getDishWeeklyList', get_dish_weekly_list, name='get_dish_weekly_list'),
 
     # 房间管理
     path('order/addRoom', add_room, name='add_room'),  # ---增
@@ -70,4 +72,5 @@ urlpatterns = [
     path('order/getOrderStatusList', get_orderStatus_List, name='get_orderStatus_List'),
     path('order/getRoomDictList', get_room_dict_List, name='get_room_dict_List'),
 
+    path('order/getweekIdList', get_weekid_List, name='get_weekid_List'),
 ]

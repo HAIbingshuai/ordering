@@ -100,18 +100,18 @@ def get_order_list(request):
     # 构建查询条件
     query_params = {}
     if order_number:
-        query_params['orderNumber__icontains'] = order_number
+        query_params['ordernumber__icontains'] = order_number
     if created_at_start and created_at_end:
-        query_params['createdAt__gte'] = created_at_start
-        query_params['createdAt__lte'] = created_at_end
+        query_params['createdat__gte'] = created_at_start
+        query_params['createdat__lte'] = created_at_end
     else:
         # 一周之内
         one_week_ago = timezone.now() - timedelta(days=30)
-        query_params['createdAt__gte'] = one_week_ago
+        query_params['createdat__gte'] = one_week_ago
 
     if order_status:
-        query_params['orderStatus_id'] = order_status
-    query_params['roomId_id'] = 5  # 堂食
+        query_params['orderstatus_id'] = order_status
+    query_params['roomid_id'] = 5  # 堂食
 
     # 执行查询
     orderList = Order.objects.filter(**query_params)
@@ -124,18 +124,18 @@ def get_order_list(request):
         # 菜品关联表-获取订单所有关联菜品
         order_dict = {
             'orderId': orderOneContent.id,
-            'orderNumber': orderOneContent.orderNumber,
-            'userName': orderOneContent.userId.userName,
-            'createdAt': orderOneContent.createdAt.strftime('%Y-%m-%d %H:%M:%S'),
-            'phoneNumber': orderOneContent.userId.phoneNumber,
-            'orderDishNum': len(OrderDish.objects.filter(orderId=orderOneContent.id)),
-            'roomName': orderOneContent.roomId.roomName,
-            'roomLocation': orderOneContent.roomId.roomLocation,
-            'orderStatus': orderOneContent.orderStatus.id,
-            'orderStatusValue': orderStatusDict[orderOneContent.orderStatus.id],
-            'scheduledTime': orderOneContent.scheduledDate.strftime('%Y-%m-%d'),
-            'scheduledTimeStart': orderOneContent.scheduledTimeStart.strftime('%H:%M:%S'),
-            'scheduledTimeEnd': orderOneContent.scheduledTimeEnd.strftime('%H:%M:%S')
+            'orderNumber': orderOneContent.ordernumber,
+            'userName': orderOneContent.userid.username,
+            'createdAt': orderOneContent.createdat.strftime('%Y-%m-%d %H:%M:%S'),
+            'phoneNumber': orderOneContent.userid.phonenumber,
+            'orderDishNum': len(OrderDish.objects.filter(orderid=orderOneContent.id)),
+            'roomName': orderOneContent.roomid.roomname,
+            'roomLocation': orderOneContent.roomid.roomlocation,
+            'orderStatus': orderOneContent.orderstatus.id,
+            'orderStatusValue': orderStatusDict[orderOneContent.orderstatus.id],
+            'scheduledTime': orderOneContent.scheduleddate.strftime('%Y-%m-%d'),
+            'scheduledTimeStart': orderOneContent.scheduledtimestart.strftime('%H:%M:%S'),
+            'scheduledTimeEnd': orderOneContent.scheduledtimeend.strftime('%H:%M:%S')
         }
         all_results_.append(order_dict)
     all_results = sorted(all_results_, key=lambda x: x['createdAt'], reverse=True)
@@ -184,21 +184,21 @@ def get_orderandroom_list(request):
     # 构建查询条件
     query = Q()
     if order_number:
-        query &= Q(orderNumber__icontains=order_number)
+        query &= Q(ordernumber__icontains=order_number)
 
     if created_at_start and created_at_end:
-        query &= Q(createdAt__gte=created_at_start)
-        query &= Q(createdAt__lte=created_at_end)
+        query &= Q(createdat__gte=created_at_start)
+        query &= Q(createdat__lte=created_at_end)
     else:
         one_week_ago = timezone.now() - timedelta(days=30)
-        query &= Q(createdAt__gte=one_week_ago)
+        query &= Q(createdat__gte=one_week_ago)
 
     if order_status:
-        query &= Q(orderStatus_id=order_status)
+        query &= Q(orderstatus_id=order_status)
     if roomId:
-        query &= Q(roomId_id=roomId)
+        query &= Q(roomid_id=roomId)
     else:
-        query &= ~Q(roomId_id=5)
+        query &= ~Q(roomid_id=5)
 
     # 执行查询
     orderList = Order.objects.filter(query)
@@ -209,19 +209,19 @@ def get_orderandroom_list(request):
     for orderOneContent in orderList:
         order_dict = {
             'orderId': orderOneContent.id,
-            'orderNumber': orderOneContent.orderNumber,
-            'userName': orderOneContent.userId.userName,
-            'phoneNumber': orderOneContent.userId.phoneNumber,
-            'createdAt': orderOneContent.createdAt.strftime('%Y-%m-%d %H:%M:%S'),
-            'orderDishNum': len(OrderDish.objects.filter(orderId=orderOneContent.id)),
-            'roomName': orderOneContent.roomId.roomName,
-            'roomLocation': orderOneContent.roomId.roomLocation,
-            'orderStatus': orderOneContent.orderStatus.id,
-            'numberDiners': orderOneContent.numberDiners,  # 就餐人数
-            'scheduledDate': orderOneContent.scheduledDate.strftime('%Y-%m-%d'),  # 就餐日期
-            'scheduledDateTime': orderOneContent.scheduledTimeStart.strftime(
-                '%H:%M:%S') + '-' + orderOneContent.scheduledTimeEnd.strftime('%H:%M:%S'),
-            'orderStatusValue': orderStatusDict[orderOneContent.orderStatus.id],
+            'orderNumber': orderOneContent.ordernumber,
+            'userName': orderOneContent.userid.username,
+            'phoneNumber': orderOneContent.userid.phonenumber,
+            'createdAt': orderOneContent.createdat.strftime('%Y-%m-%d %H:%M:%S'),
+            'orderDishNum': len(OrderDish.objects.filter(orderid=orderOneContent.id)),
+            'roomName': orderOneContent.roomid.roomname,
+            'roomLocation': orderOneContent.roomid.roomlocation,
+            'orderStatus': orderOneContent.orderstatus.id,
+            'numberDiners': orderOneContent.numberdiners,  # 就餐人数
+            'scheduledDate': orderOneContent.scheduleddate.strftime('%Y-%m-%d'),  # 就餐日期
+            'scheduledDateTime': orderOneContent.scheduledtimestart.strftime(
+                '%H:%M:%S') + '-' + orderOneContent.scheduledtimeend.strftime('%H:%M:%S'),
+            'orderStatusValue': orderStatusDict[orderOneContent.orderstatus.id],
             'bz': orderOneContent.bz,
         }
         all_results_.append(order_dict)
@@ -258,17 +258,17 @@ def get_order(request):
     order_dict = {
         'orderId': order_one.id,  # id
         'orderNumber': order_one.orderNumber,  # 编号
-        'userName': order_one.userId.userName,  # 用户
-        'phoneNumber': order_one.userId.phoneNumber,  # 手机号
-        'orderStatusId': order_one.orderStatus.id,  # 订单状态
-        'statusName': order_one.orderStatus.statusName,  # 订单状态
+        'userName': order_one.userid.userName,  # 用户
+        'phoneNumber': order_one.userid.phoneNumber,  # 手机号
+        'orderStatusId': order_one.orderstatus.id,  # 订单状态
+        'statusName': order_one.orderStatus.statusname,  # 订单状态
         'dishContents': dish_contents,  # 菜品信息
         'bz': order_one.bz,  # 备注
         'numberDiners': order_one.numberDiners,  # 就餐人数
         'scheduledDate': order_one.scheduledDate,  # 就餐日期
         'scheduledTimeStart': order_one.scheduledTimeStart,  # 就餐日期
         'scheduledTimeEnd': order_one.scheduledTimeEnd,  # 就餐日期
-        'roomName': order_one.roomId.roomName,  # 房间名
+        'roomName': order_one.roomId.roomname,  # 房间名
     }
     return Result.success(data=order_dict)
 

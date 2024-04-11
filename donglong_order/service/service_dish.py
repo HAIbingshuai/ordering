@@ -1,4 +1,4 @@
-from ..models import Dish, DishTag, FirstCategory, SecondCategory, Manager
+from ..models import Dish, DishTag, WeeklyDish
 from django.db.models import F
 
 
@@ -58,9 +58,9 @@ def service_top_dish(dish_id):
     exists_dish_objs = Dish.objects.filter(id=dish_id).first()
     if exists_dish_objs is not None:
         # 获取原始的 dishOrder
-        orgin_dishOrder = exists_dish_objs.dishOrder
+        orgin_dishOrder = exists_dish_objs.dishorder
         # 更新其他菜品的 dishOrder，使其依次顺延
-        Dish.objects.filter(dishOrder__lt=orgin_dishOrder).update(dishOrder=F('dishOrder') + 1)
+        Dish.objects.filter(dishorder__lt=orgin_dishOrder).update(dishorder=F('dishorder') + 1)
         # 将指定菜品的 dishOrder 设置为 1，即置顶
-        exists_dish_objs.dishOrder = 1
-        exists_dish_objs.save(update_fields=['dishOrder'])
+        exists_dish_objs.dishorder = 1
+        exists_dish_objs.save(update_fields=['dishorder'])

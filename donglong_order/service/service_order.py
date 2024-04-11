@@ -31,5 +31,5 @@ def service_orderStatusDict():
     orderstatus_list = OrderStatus.objects.filter()
     orderstatus_dict = {}
     for one in orderstatus_list:
-        orderstatus_dict[one.id] = one.statusName
+        orderstatus_dict[one.id] = one.statusname
     return orderstatus_dict

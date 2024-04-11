@@ -1,5 +1,5 @@
 from ..utils.result import Result, Result_page
-from ..models import FirstCategory, SecondCategory, OrderStatus, Room
+from ..models import FirstCategory, SecondCategory, OrderStatus, Room,Week
 from django.db.models import Q
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
@@ -73,7 +73,7 @@ def del_dict_data(request):
         if categorytype == 1:
             FirstCategory.objects.filter(id=categoryId).delete()
         else:
-            SecondCategory.objects.create(id=categoryId).delete()
+            SecondCategory.objects.filter(id=categoryId).delete()
     except Exception as e:
         return Result.error("分类删除失败!：" + str(e))
     return Result.success("分类删除成功!")
@@ -92,14 +92,14 @@ def get_dict_data_list(request):
     for one in first_list:
         f_list.append({'categoryId': one.id,
                        "categorytype": 1,
-                       "categoryName": one.categoryName,
+                       "categoryName": one.categoryname,
                        })
     second_list = SecondCategory.objects.filter()
     s_list = []
     for one in second_list:
         s_list.append({'categoryId': one.id,
                        "categorytype": 2,
-                       "categoryName": one.categoryName,
+                       "categoryName": one.categoryname,
                        })
     all_list.append(f_list)
     all_list.append(s_list)
@@ -115,7 +115,7 @@ def get_categoryId_list(request):
     all_list = [
         {
             "firstCategoryId": one.id,
-            "categoryName": one.categoryName,
+            "categoryName": one.categoryname,
         } for one in first_list
     ]
     return Result.success(data=all_list)
@@ -130,7 +130,7 @@ def get_secCategoryId_list(request):
     all_list = [
         {
             "secondCategoryId": one.id,
-            "categoryName": one.categoryName,
+            "categoryName": one.categoryname,
         } for one in first_list
     ]
     return Result.success(data=all_list)
@@ -145,7 +145,7 @@ def get_orderStatus_List(request):
     all_list = [
         {
             "orderStatusId": one.id,
-            "statusName": one.statusName,
+            "statusName": one.statusname,
         } for one in first_list
     ]
     return Result.success(data=all_list)
@@ -164,7 +164,21 @@ def get_room_dict_List(request):
     all_list = [
         {
             "roomId": one.id,
-            "roomName": one.roomName,
+            "roomName": one.roomname,
         } for one in room_list
+    ]
+    return Result.success(data=all_list)
+
+@api_view(['GET'])
+def get_weekid_List(request):
+
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+    week_list = Week.objects.filter()
+    all_list = [
+        {
+            "weekId": one.id,
+            "weekName": one.weekname,
+        } for one in week_list
     ]
     return Result.success(data=all_list)
