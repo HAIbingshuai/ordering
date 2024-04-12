@@ -1,5 +1,5 @@
 from ..utils.result import Result, Result_page
-from ..models import FirstCategory, SecondCategory, OrderStatus, Room,Week
+from ..models import FirstCategory, SecondCategory, OrderStatus, Room,Week,Dish
 from django.db.models import Q
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
@@ -180,5 +180,20 @@ def get_weekid_List(request):
             "weekId": one.id,
             "weekName": one.weekname,
         } for one in week_list
+    ]
+    return Result.success(data=all_list)
+
+
+@api_view(['GET'])
+def get_dish_list_dict(request):
+
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+    dish_list = Dish.objects.filter()
+    all_list = [
+        {
+            "dishId": one.id,
+            "dishName": one.dishname,
+        } for one in dish_list
     ]
     return Result.success(data=all_list)

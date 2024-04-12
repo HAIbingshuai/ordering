@@ -52,30 +52,23 @@
             <div class="layui-form-add-item">
                 <label class="layui-form-label">周几:</label>
                 <div class="layui-input-inline">
-                    <select id="weekId" name="weekId" lay-verify="required">
-                    </select>
+                    <select id="weekId" name="weekId" lay-verify="required"></select>
                 </div>
             </div>
+
             <div class="layui-form-add-item">
-                <label class="layui-form-label">早餐:</label>
-                <div class="layui-input-inline">
-                    <button type="button" class="layui-btn layui-btn-sm add-dish" data-meal="breakfast">添加</button>
-                </div>
-                <div class="dish-list" data-meal="breakfast"></div>
+                <label class="layui-form-label">早餐菜品:</label>
+                <div class="layui-input-block checkbox-list breakfast"></div>
             </div>
+
             <div class="layui-form-add-item">
-                <label class="layui-form-label">午餐:</label>
-                <div class="layui-input-inline">
-                    <button type="button" class="layui-btn layui-btn-sm add-dish" data-meal="lunch">添加</button>
-                </div>
-                <div class="dish-list" data-meal="lunch"></div>
+                <label class="layui-form-label">午餐菜品:</label>
+                <div class="layui-input-block checkbox-list lunch"></div>
             </div>
+
             <div class="layui-form-add-item">
-                <label class="layui-form-label">晚餐:</label>
-                <div class="layui-input-inline">
-                    <button type="button" class="layui-btn layui-btn-sm add-dish" data-meal="dinner">添加</button>
-                </div>
-                <div class="dish-list" data-meal="dinner"></div>
+                <label class="layui-form-label">晚餐菜品:</label>
+                <div class="layui-input-block checkbox-list dinner"></div>
             </div>
         </form>
     </div>
@@ -121,37 +114,24 @@
                 }
             });
 
-
-            // 添加菜品按钮点击事件
-            $('.add-dish').click(function () {
-                var meal = $(this).data('meal');
-                var $dishList = $('.dish-list[data-meal="' + meal + '"]');
-                // 模拟获取菜品列表，这里假设菜品数据为一个数组
-                var dishes = ['菜品1', '菜品2', '菜品3']; // 可以根据实际情况获取菜品列表数据
-
-                var html = '<div class="layui-form-add-item">';
-                html += '<label class="layui-form-label">选择菜品:</label>';
-                html += '<div class="layui-input-inline">';
-                html += '<select class="layui-select" lay-verify="required">';
-                html += '<option value="">请选择</option>';
-                // 将菜品列表添加到下拉框中
-                dishes.forEach(function (dish) {
-                    html += '<option value="' + dish + '">' + dish + '</option>';
-                });
-                html += '</select>';
-                html += '</div>';
-                html += '<button type="button" class="layui-btn layui-btn-sm confirm-dish">确定</button>';
-                html += '</div>';
-
-                $dishList.html(html);
-            });
-
-            $(document).on('click', '.confirm-dish', function () {
-                var $selectedOption = $(this).siblings('select').find('option:selected');
-                var selectedDish = $selectedOption.val();
-                var meal = $(this).closest('.dish-list').data('meal');
-                var $mealList = $('.dish-list[data-meal="' + meal + '"]');
-                $mealList.append('<div>' + selectedDish + '</div>');
+            $.ajax({
+                url: '/dl_order/order/getDishListDict', // 替换为你的后端接口 URL
+                type: 'GET',
+                success: function (res) {
+                    var dishes = res.data; // 假设返回的是一个菜品数组
+                    var checkboxList = '';
+                    for (var i = 0; i < dishes.length; i++) {
+                        checkboxList += '<input type="checkbox" name="breakfast[]" value="' + dishes[i].dishId + '" title="' + dishes[i].dishName + '">';
+                    }
+                    // 修改选择器为[name="breakfast[]"]，[name="lunch[]"]，[name="dinner[]"]
+                    $('.checkbox-list.breakfast').html(checkboxList); // 将生成的复选框添加到早餐菜品的容器中
+                    $('.checkbox-list.lunch').html(checkboxList); // 将生成的复选框添加到午餐菜品的容器中
+                    $('.checkbox-list.dinner').html(checkboxList); // 将生成的复选框添加到晚餐菜品的容器中
+                    form.render('checkbox'); // 重新渲染复选框
+                },
+                error: function (err) {
+                    console.error('获取菜品列表出错:', err);
+                }
             });
 
 
@@ -198,25 +178,7 @@
                     }
                 }
             });
-            {#点击查询按钮#}
-            $('#searchBtn').click(function () {
-                var dishName = $('input[name="dishName"]').val().trim();
-                // 发送 AJAX 请求进行数据搜索过滤，并渲染到页面
-                $.ajax({
-                    url: '/dl_order/order/getDishWeeklyList',  // 替换为你的后端搜索接口 URL
-                    type: 'GET',
-                    success: function (res) {
-                        if (res.success) {
-                            table.reload('dataList', {
-                                data: res.data
-                            });
-                        }
-                    },
-                    error: function (err) {
-                        console.log(err);
-                    }
-                });
-            });
+
             {#点击新增按钮#}
             $('#addBtn').click(function () {
                 layer.open({
@@ -226,93 +188,68 @@
                     content: $('#addForm'), // 弹出新增页面的内容，即下面的表单
                     btn: ['确认新增', '取消'],
                     yes: function (index, layero) {
-                        // 在这里可以处理确认新增的逻辑，发送 AJAX 请求等
-                        // 例如，获取新增菜品表单数据
                         var formData = {
-                            dishName: $('#adddishName').val(),
-                            stockQuantity: $('#stockQuantity').val(),
-                            firstCategoryId: parseInt($('#firstCategoryId').val()),
-                            secondCategoryId: parseInt($('#secondCategoryId').val()),
-                            tagsList: JSON.stringify(getTagsList()),
-                            dishStatus: parseInt($('#dishStatus').prop('checked') ? 1 : 0),
-                            dineInDisplayStatus: parseInt($('#dineInDisplayStatus').prop('checked') ? 1 : 0),
-                            takeoutDisplayStatus: parseInt($('#takeoutDisplayStatus').prop('checked') ? 1 : 0),
-                            imageUrl: $('#imageUrl').val() // 图片上传的路径或数据
-                            // 还可以添加其他字段
+                            weekId: $('#weekId').val(), // 获取周几的值
+                            breakfast: [], // 初始化早餐菜品数组
+                            lunch: [], // 初始化午餐菜品数组
+                            dinner: [] // 初始化晚餐菜品数组
                         };
 
-                        // 发送 AJAX 请求进行新增操作，示例代码：
+                        // 获取选中的早餐菜品
+                        $('.checkbox-list.breakfast input:checked').each(function () {
+                            formData.breakfast.push($(this).val());
+                        });
+
+                        // 获取选中的午餐菜品
+                        $('.checkbox-list.lunch input:checked').each(function () {
+                            formData.lunch.push($(this).val());
+                        });
+
+                        // 获取选中的晚餐菜品
+                        $('.checkbox-list.dinner input:checked').each(function () {
+                            formData.dinner.push($(this).val());
+                        });
+
+
+                        // 确认新增按钮的回调函数
                         $.ajax({
-                            url: '/dl_order/order/addDish',  // 替换为你的后端新增接口 URL
+                            url: '/dl_order/order/addWeekDishList', // 替换为你的后端接口 URL
                             type: 'POST',
-                            data: formData,
                             headers: {
                                 'X-CSRFToken': '{{ csrf_token }}'  // 使用 Django 提供的模板标签获取 CSRF 令牌
                             },
+                            data: formData,
                             success: function (res) {
-                                if (res.success) {
-                                    // 新增成功后的处理，例如关闭弹窗、刷新表格等
-                                    layer.msg('新增成功');
-                                    layer.close(index); // 关闭弹窗
-                                    // 刷新表格数据等操作
-                                    // 执行查询操作，获取最新数据
-                                    $.ajax({
-                                        url: '/dl_order/order/getDishList',  // 替换为你的后端搜索接口 URL
-                                        type: 'GET',
-                                        data: {
-                                            dishName: '',  // 可根据实际需要传递查询条件
-                                            firstCategoryId: ''
-                                        },
-                                        success: function (res) {
-                                            if (res.success) {
-                                                // 更新表格数据
-                                                table.reload('dataList', {
-                                                    data: res.data
-                                                });
-                                            }
-                                        },
-                                        error: function (err) {
-                                            console.log(err);
+                                layer.msg('新增菜品成功');
+                                layer.close(index); // 关闭弹窗
+                                $.ajax({
+                                    url: '/dl_order/order/getDishWeeklyList',  // 替换为你的后端搜索接口 URL
+                                    type: 'GET',
+                                    success: function (res) {
+                                        if (res.success) {
+                                            // 更新表格数据
+                                            table.reload('dataList', {
+                                                data: res.data
+                                            });
                                         }
-                                    });
-
-                                } else {
-                                    layer.msg('新增失败: ' + res.message);
-                                }
+                                    },
+                                    error: function (err) {
+                                        console.log(err);
+                                    }
+                                });
                             },
                             error: function (err) {
-                                console.log(err);
-                                layer.msg('新增失败，请重试');
+                                console.error('新增菜品出错:', err);
+                                // 新增失败的处理逻辑，例如提示用户新增失败
+                                layer.msg('新增菜品失败，请重试');
                             }
                         });
                     },
                     btn2: function (index, layero) {
-                        $('#adddishName').val('').prop('readonly', false);
-                        $('#stockQuantity').val('').prop('readonly', false);
-                        $('#firstCategoryId').val('').prop('disabled', false);
-                        $('#secondCategoryId').val('').prop('disabled', false);
-                        $('#imageUrl').val('').prop('readonly', false);
-                        $('#dishStatus').prop('checked', false).prop('disabled', false);
-                        $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
-                        $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
-                        $('.tag-input').val('').prop('readonly', false);
-                        $('#uploadBtn').val('').show(); // 显示上传按钮
-                        form.render(); // 重新渲染表单
-                        layer.close(index);
+                        $('#addForm')[0].reset();
                     },
                     cancel: function () {
-                        // 点击窗口右上角关闭按钮时的处理，同样恢复表单状态
-                        $('#adddishName').val('').prop('readonly', false);
-                        $('#stockQuantity').val('').prop('readonly', false);
-                        $('#firstCategoryId').val('').prop('disabled', false); // 设置为可用
-                        $('#secondCategoryId').val('').prop('disabled', false); // 设置为可用
-                        $('#imageUrl').val('').prop('readonly', false);
-                        $('#dishStatus').prop('checked', false).prop('disabled', false);
-                        $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
-                        $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
-                        $('.tag-input').val('').prop('readonly', false);
-                        $('#uploadBtn').show(); // 显示上传按钮
-                        form.render(); // 重新渲染表单
+                        $('#addForm')[0].reset();
                     }
                 });
             });

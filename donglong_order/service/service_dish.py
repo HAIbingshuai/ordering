@@ -1,6 +1,6 @@
 from ..models import Dish, DishTag, WeeklyDish
 from django.db.models import F
-
+from django.utils import timezone
 
 def service_add_dish(dish_dict):
     Dish.objects.filter(dishOrder__gte=dish_dict['dishOrder']).update(dishOrder=F('dishOrder') + 1)  # 新建dish影响其他的内容
@@ -64,3 +64,14 @@ def service_top_dish(dish_id):
         # 将指定菜品的 dishOrder 设置为 1，即置顶
         exists_dish_objs.dishorder = 1
         exists_dish_objs.save(update_fields=['dishorder'])
+
+def service_weekly_dish_add(dish_time,weekId,dish_list,managerId):
+    for dishid in dish_list:
+        data = {
+            'weekid_id': weekId,
+            'dayname': dish_time,
+            'dishid_id': int(dishid),
+            'createdat': timezone.localtime(),
+            'createdby_id': managerId,
+        }
+        weeklyDish1 = WeeklyDish.objects.create(**data)

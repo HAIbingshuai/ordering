@@ -385,9 +385,9 @@ def get_dish_weekly_list(request):
         all_results_.append({
             'weekId': week_obj.id,
             'weekName': day_num,
-            'day1Name': dish_list_three[0],
-            'day2Name': dish_list_three[1],
-            'day3Name': dish_list_three[2],
+            'day1Name': '、'.join([one[1] for one in dish_list_three[0]]),
+            'day2Name': '、'.join([one[1] for one in dish_list_three[1]]),
+            'day3Name': '、'.join([one[1] for one in dish_list_three[2]]),
         })
     all_results = sorted(all_results_, key=lambda x: x['weekId'], reverse=False)
     paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
@@ -397,3 +397,32 @@ def get_dish_weekly_list(request):
 
     return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
                                page_html='dishWeek.html', request=request)
+
+
+@api_view(['POST'])
+def add_week_dish_list(request):
+    if request.method != 'POST':
+        return Result.error('无效的请求方法')
+    try:
+        weekId = request.data.get('weekId')
+        # 获取其他字段的值
+        breakfast = request.POST.getlist('breakfast[]')
+        lunch = request.POST.getlist('lunch[]')
+        dinner = request.POST.getlist('dinner[]')
+
+        # 都不能为空
+        if weekId in [None, ''] or len(breakfast) == 0 or len(lunch) == 0 or len(dinner) == 0:
+            return Result.error('存在空值！请查看！')
+        # 不能有一样的周几
+        wd_list = WeeklyDish.objects.filter(weekid_id=weekId)
+        if len(wd_list) > 0:
+            return Result.error('此已有菜单！请先删除已有菜单，再进行新增！')
+
+        service_weekly_dish_add('早餐', weekId, breakfast, 1)
+        service_weekly_dish_add('午餐', weekId, lunch, 1)
+        service_weekly_dish_add('晚餐', weekId, dinner, 1)
+
+    except Exception as e:
+        transaction.set_rollback(True)  # 回执
+        return Result.error('菜品信息新增失败！请查看：' + str(e))
+    return Result.success('菜品信息新增完成！')

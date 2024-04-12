@@ -338,12 +338,8 @@
                                     // 刷新表格数据等操作
                                     // 执行查询操作，获取最新数据
                                     $.ajax({
-                                        url: '/dl_order/order/getDishList',  // 替换为你的后端搜索接口 URL
+                                        url: '/dl_order/order/getDishWeeklyList',  // 替换为你的后端搜索接口 URL
                                         type: 'GET',
-                                        data: {
-                                            dishName: '',  // 可根据实际需要传递查询条件
-                                            firstCategoryId: ''
-                                        },
                                         success: function (res) {
                                             if (res.success) {
                                                 // 更新表格数据
