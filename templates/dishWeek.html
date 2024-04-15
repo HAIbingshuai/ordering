@@ -210,7 +210,6 @@
                             formData.dinner.push($(this).val());
                         });
 
-
                         // 确认新增按钮的回调函数
                         $.ajax({
                             url: '/dl_order/order/addWeekDishList', // 替换为你的后端接口 URL
@@ -220,228 +219,62 @@
                             },
                             data: formData,
                             success: function (res) {
-                                layer.msg('新增菜品成功');
-                                layer.close(index); // 关闭弹窗
-                                $.ajax({
-                                    url: '/dl_order/order/getDishWeeklyList',  // 替换为你的后端搜索接口 URL
-                                    type: 'GET',
-                                    success: function (res) {
-                                        if (res.success) {
-                                            // 更新表格数据
-                                            table.reload('dataList', {
-                                                data: res.data
-                                            });
+                                if (res.success) {
+                                    $.ajax({
+                                        url: '/dl_order/order/getDishWeeklyList',  // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        success: function (res) {
+                                            if (res.success) {
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            layer.msg('获取菜品列表失败，请重试');
                                         }
-                                    },
-                                    error: function (err) {
-                                        console.log(err);
-                                    }
-                                });
+                                    });
+                                    layer.msg('新增菜品成功');
+                                    layer.close(index); // 关闭弹窗
+                                } else {
+                                    {#console.error('新增菜品出错:', res.message);#}
+                                    layer.msg('新增菜品失败，' + res.message);
+                                }
                             },
                             error: function (err) {
-                                console.error('新增菜品出错:', err);
+                                {#console.error('新增菜品出错:', err);#}
                                 // 新增失败的处理逻辑，例如提示用户新增失败
-                                layer.msg('新增菜品失败，请重试');
+                                layer.msg('新增菜品失败，请重试！');
                             }
                         });
+
                     },
                     btn2: function (index, layero) {
-                        $('#addForm')[0].reset();
+                        $('#weekId').val(''); // 清空周几下拉框
+                        $('.checkbox-list input[type="checkbox"]').prop('checked', false);
+                        form.render();
+                        layer.close(index); // 关闭弹窗
                     },
                     cancel: function () {
-                        $('#addForm')[0].reset();
+                        $('#weekId').val('');
+                        $('.checkbox-list input[type="checkbox"]').prop('checked', false);
+                        form.render();
+
                     }
                 });
             });
             // 监听 查看菜品、编辑菜品、删除按钮 点击事件
             table.on('tool(dataList)', function (obj) {
                 var data = obj.data;
-                if (obj.event === 'view') {
-                    layer.open({
-                        type: 1,
-                        title: '查看菜品',
-                        area: ['800px', '700px'],
-                        content: $('#addForm'), // 弹出编辑页面的内容，即下面的表单
-                        btn: ['退出'],
-                        success: function (layero, index) {
-                            // 将菜品数据填充到表单中
-                            $('#adddishName').val(data.dishName).prop('readonly', true);
-                            $('#stockQuantity').val(data.stockQuantity).prop('readonly', true);
-                            $('#firstCategoryId').val(data.firstCategoryId).prop('disabled', true);
-                            $('#secondCategoryId').val(data.secondCategoryId).prop('disabled', true);
-                            $('#imageUrl').val(data.imageUrl).prop('readonly', true);
-                            $('#imagePreview').html('<img src="' + data.imageUrl + '" alt="预览图片" style="max-width: 100px; max-height: 100px;">'); // 显示图片预览
-                            $('#dishStatus').prop('checked', data.dishStatus === 1).prop('disabled', true);
-                            $('#dineInDisplayStatus').prop('checked', data.dineInDisplayStatus === 1).prop('disabled', true);
-                            $('#takeoutDisplayStatus').prop('checked', data.takeoutDisplayStatus === 1).prop('disabled', true);
-                            var tagsList = data.tagsList;// 填充菜品标签数据到输入框
-                            if (tagsList && tagsList.length <= 3) {
-                                $('.tag-input').each(function (index) {
-                                    $(this).val(tagsList[index]).prop('readonly', true); // 将对应标签数据填充到输入框，设置为只读
-                                });
-                            }
-                            $('#uploadBtn').hide(); // 隐藏上传按钮
-                            form.render(); // 重新渲染表单
-                        },
-
-                        btn1: function (index, layero) {
-                            $('#adddishName').val('').prop('readonly', false);
-                            $('#stockQuantity').val('').prop('readonly', false);
-                            $('#firstCategoryId').val('').prop('disabled', false);
-                            $('#secondCategoryId').val('').prop('disabled', false);
-                            $('#imageUrl').val('').prop('readonly', false);
-                            $('#dishStatus').prop('checked', false).prop('disabled', false);
-                            $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('.tag-input').val('').prop('readonly', false);
-                            $('#uploadBtn').val('').show(); // 显示上传按钮
-                            form.render(); // 重新渲染表单
-                            layer.close(index);
-                        },
-
-                        cancel: function () {
-                            // 点击窗口右上角关闭按钮时的处理，同样恢复表单状态
-                            $('#adddishName').val('').prop('readonly', false);
-                            $('#stockQuantity').val('').prop('readonly', false);
-                            $('#firstCategoryId').val('').prop('disabled', false); // 设置为可用
-                            $('#secondCategoryId').val('').prop('disabled', false); // 设置为可用
-                            $('#imageUrl').val('').prop('readonly', false);
-                            $('#dishStatus').prop('checked', false).prop('disabled', false);
-                            $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('.tag-input').val('').prop('readonly', false);
-                            $('#uploadBtn').show(); // 显示上传按钮
-                            form.render(); // 重新渲染表单
-                        }
-                    });
-                }
-                if (obj.event === 'edit') {
-                    layer.open({
-                        type: 1,
-                        title: '编辑菜品',
-                        area: ['800px', '700px'],
-                        content: $('#addForm'), // 弹出编辑页面的内容，即下面的表单
-                        btn: ['确认修改', '取消'],
-                        success: function (layero, index) {
-                            // 将菜品数据填充到表单中
-                            $('#adddishName').val(data.dishName);
-                            $('#stockQuantity').val(data.stockQuantity);
-                            $('#firstCategoryId').val(data.firstCategoryId);
-                            $('#secondCategoryId').val(data.secondCategoryId);
-                            $('#imageUrl').val(data.imageUrl);
-                            $('#imagePreview').html('<img src="' + data.imageUrl + '" alt="预览图片" style="max-width: 100px; max-height: 100px;">'); // 显示图片预览
-                            $('#dishStatus').prop('checked', data.dishStatus === 1);
-                            $('#dineInDisplayStatus').prop('checked', data.dineInDisplayStatus === 1);
-                            $('#takeoutDisplayStatus').prop('checked', data.takeoutDisplayStatus === 1);
-                            var tagsList = data.tagsList;// 填充菜品标签数据到输入框
-                            if (tagsList && tagsList.length <= 3) {
-                                $('.tag-input').each(function (index) {
-                                    $(this).val(tagsList[index]); // 将对应标签数据填充到输入框
-                                });
-                            }
-                            form.render(); // 重新渲染表单
-                        },
-
-
-                        btn1: function (index, layero) {
-                            // 监听确认编辑按钮
-                            // 获取编辑后的表单数据
-                            var formData = {
-                                dishId: data.dishId, // 假设菜品数据中有菜品ID字段
-                                dishName: $('#adddishName').val(),
-                                stockQuantity: $('#stockQuantity').val(),
-                                firstCategoryId: parseInt($('#firstCategoryId').val()),
-                                secondCategoryId: parseInt($('#secondCategoryId').val()),
-                                tagsList: JSON.stringify(getTagsList()),
-                                dishStatus: parseInt($('#dishStatus').prop('checked') ? 1 : 0),
-                                dineInDisplayStatus: parseInt($('#dineInDisplayStatus').prop('checked') ? 1 : 0),
-                                takeoutDisplayStatus: parseInt($('#takeoutDisplayStatus').prop('checked') ? 1 : 0),
-                                imageUrl: $('#imageUrl').val() // 图片上传的路径或数据
-                                // 可添加其他字段
-                            };
-
-                            // 发送编辑请求，示例代码：
-                            $.ajax({
-                                url: '/dl_order/order/updateDish', // 替换为实际的编辑接口 URL
-                                type: 'POST',
-                                data: formData,
-                                headers: {
-                                    'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
-                                },
-                                success: function (res) {
-                                    if (res.success) {
-                                        layer.msg('编辑成功');
-                                        layer.close(index); // 关闭弹窗
-                                        // 刷新表格数据等操作
-                                        // 执行查询操作，获取最新数据
-                                        $.ajax({
-                                            url: '/dl_order/order/getDishList', // 替换为你的后端搜索接口 URL
-                                            type: 'GET',
-                                            data: {
-                                                dishName: '', // 可根据实际需要传递查询条件
-                                                firstCategoryId: ''
-                                            },
-                                            success: function (res) {
-                                                if (res.success) {
-                                                    // 更新表格数据
-                                                    table.reload('dataList', {
-                                                        data: res.data
-                                                    });
-                                                }
-                                            },
-                                            error: function (err) {
-                                                console.log(err);
-                                            }
-                                        });
-                                    } else {
-                                        layer.msg('编辑失败: ' + res.message);
-                                    }
-                                },
-                                error: function (err) {
-                                    console.log(err);
-                                    layer.msg('编辑失败，请重试');
-                                }
-                            });
-                        },
-                        btn2: function (index, layero) {
-                            $('#adddishName').val('').prop('readonly', false);
-                            $('#stockQuantity').val('').prop('readonly', false);
-                            $('#firstCategoryId').val('').prop('disabled', false);
-                            $('#secondCategoryId').val('').prop('disabled', false);
-                            $('#imageUrl').val('').prop('readonly', false);
-                            $('#dishStatus').prop('checked', false).prop('disabled', false);
-                            $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('.tag-input').val('').prop('readonly', false);
-                            $('#uploadBtn').val('').show(); // 显示上传按钮
-                            form.render(); // 重新渲染表单
-                            layer.close(index);
-                        },
-                        cancel: function () {
-                            // 点击窗口右上角关闭按钮时的处理，同样恢复表单状态
-                            $('#adddishName').val('').prop('readonly', false);
-                            $('#stockQuantity').val('').prop('readonly', false);
-                            $('#firstCategoryId').val('').prop('disabled', false); // 设置为可用
-                            $('#secondCategoryId').val('').prop('disabled', false); // 设置为可用
-                            $('#imageUrl').val('').prop('readonly', false);
-                            $('#dishStatus').prop('checked', false).prop('disabled', false);
-                            $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
-                            $('.tag-input').val('').prop('readonly', false);
-                            $('#uploadBtn').show(); // 显示上传按钮
-                            form.render(); // 重新渲染表单
-                        }
-                    });
-                }
                 if (obj.event === 'delete') {
                     layer.confirm('确定要删除该条数据吗？', function (index) {
                         var formData = {
-                            dishId: data.dishId, // 假设菜品数据中有菜品ID字段
+                            weekId: data.weekId, // 假设菜品数据中有菜品ID字段
                         }
 
                         // 发送编辑请求，示例代码：
                         $.ajax({
-                            url: '/dl_order/order/delDish', // 替换为实际的编辑接口 URL
+                            url: '/dl_order/order/delDishWeek', // 替换为实际的编辑接口 URL
                             type: 'POST',
                             data: formData,
                             headers: {
@@ -452,11 +285,9 @@
                                     layer.msg('删除成功');
                                     layer.close(index);
                                     $.ajax({
-                                        url: '/dl_order/order/getDishList', // 替换为你的后端搜索接口 URL
+                                        url: '/dl_order/order/getDishWeeklyList', // 替换为你的后端搜索接口 URL
                                         type: 'GET',
                                         data: {
-                                            dishName: '', // 可根据实际需要传递查询条件
-                                            firstCategoryId: ''
                                         },
                                         success: function (res) {
                                             if (res.success) {
@@ -485,26 +316,12 @@
             });
         });
 
-        // 获取菜品数据的函数
-        function getTagsList() {
-            var tagsList = [];
-            $('.tag-input').each(function () {
-                var tagValue = $(this).val().trim(); // 获取标签输入框的值，并去除首尾空白字符
-                if (tagValue.trim() !== '') {
-                    tagsList.push(tagValue); // 将非空标签值添加到数组中
-                }
-            });
-            return tagsList;
-        }
-
 
     </script>
 
     <script type="text/html" id="btnGroup">
         <div class="button-container">
-            <button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>
-            <button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>
-            <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</button>
+            <button class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">清空</button>
         </div>
     </script>
 

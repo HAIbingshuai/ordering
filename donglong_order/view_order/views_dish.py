@@ -178,6 +178,26 @@ def del_dish(request):
         return Result.error('xxx信息删除失败！请查看：' + str(e))
     return Result.success('xxx信息删除完成！')
 
+@api_view(['POST'])
+@transaction.atomic
+def del_dish_week(request):
+    if request.method != 'POST':
+        return Result.error('无效的请求方法')
+
+    if request.data.get('weekId') in ['', None]:
+        return Result.error('weekId不能为空！')
+
+    try:
+        weekId = request.data.get('weekId')
+        service_delete_dishWeek(weekId)  # 删除对应数据
+    except Exception as e:
+        transaction.set_rollback(True)  # 回执
+        return Result.error('xxx信息删除失败！请查看：' + str(e))
+    return Result.success('xxx信息删除完成！')
+
+
+
+
 
 @api_view(['POST'])
 @transaction.atomic
@@ -416,7 +436,7 @@ def add_week_dish_list(request):
         # 不能有一样的周几
         wd_list = WeeklyDish.objects.filter(weekid_id=weekId)
         if len(wd_list) > 0:
-            return Result.error('此已有菜单！请先删除已有菜单，再进行新增！')
+            return Result.error('请先删除已有菜单，再进行新增！')
 
         service_weekly_dish_add('早餐', weekId, breakfast, 1)
         service_weekly_dish_add('午餐', weekId, lunch, 1)

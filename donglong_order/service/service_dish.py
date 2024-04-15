@@ -2,6 +2,7 @@ from ..models import Dish, DishTag, WeeklyDish
 from django.db.models import F
 from django.utils import timezone
 
+
 def service_add_dish(dish_dict):
     Dish.objects.filter(dishOrder__gte=dish_dict['dishOrder']).update(dishOrder=F('dishOrder') + 1)  # 新建dish影响其他的内容
     dish = Dish.objects.create(**dish_dict)
@@ -42,6 +43,10 @@ def service_delete_dishTag(dish_id):
     DishTag.objects.filter(dishId=dish_id).delete()
 
 
+def service_delete_dishWeek(id):
+    WeeklyDish.objects.filter(weekid__id=id).delete()
+
+
 def service_restart_order_dish():
     # 遍历所有菜品
     exists_dish_objs = Dish.objects.filter()
@@ -65,7 +70,8 @@ def service_top_dish(dish_id):
         exists_dish_objs.dishorder = 1
         exists_dish_objs.save(update_fields=['dishorder'])
 
-def service_weekly_dish_add(dish_time,weekId,dish_list,managerId):
+
+def service_weekly_dish_add(dish_time, weekId, dish_list, managerId):
     for dishid in dish_list:
         data = {
             'weekid_id': weekId,

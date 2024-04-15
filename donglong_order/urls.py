@@ -33,6 +33,8 @@ urlpatterns = [
     # 菜品管理-每周菜品
     path('order/getDishWeeklyList', get_dish_weekly_list, name='get_dish_weekly_list'),
     path('order/addWeekDishList', add_week_dish_list, name='add_week_dish_list'),
+    path('order/delDishWeek', del_dish_week, name='del_dish_week'),
+
 
     # 房间管理
     path('order/addRoom', add_room, name='add_room'),  # ---增
