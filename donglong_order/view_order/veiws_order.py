@@ -5,7 +5,7 @@ from ..service.service_picture_url import get_orderNumber
 from ..utils.judgment_of_null_void import *
 from ..utils.result import *
 from django.core.paginator import Paginator
-from ..models import Order, OrderDish
+from ..models import OrderInfo, OrderDish
 from django.db.models import Q
 from datetime import datetime, timedelta
 from django.utils import timezone

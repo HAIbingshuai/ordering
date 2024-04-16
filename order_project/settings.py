@@ -201,14 +201,19 @@ SIMPLEUI_CONFIG = {
             'models': [
                 {
                     'name': '包间列表',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/dl_order/order/getData',
+                    'url': '/dl_order/order/getRoomList',
                     'icon': 'fa fa-tasks'
                 },
+            ]
+        },
+
+        {
+            'name': '餐厅管理',
+            'icon': 'fa fa-th-list',
+            'models': [
                 {
-                    'name': '新增包间',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/admin/tasks/task/',
+                    'name': '餐厅列表',
+                    'url': '/dl_order/order/getRestaurantCarouselList',
                     'icon': 'fa fa-tasks'
                 },
             ]
@@ -228,25 +233,6 @@ SIMPLEUI_CONFIG = {
                     'icon': 'fa fa-th-list',
                     'url': 'auth/group/'
                 }
-            ]
-        },
-
-        {
-            'name': '餐厅管理',
-            'icon': 'fa fa-th-list',
-            'models': [
-                {
-                    'name': '餐厅列表',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/dl_order/order/getDishList',
-                    'icon': 'fa fa-tasks'
-                },
-                {
-                    'name': '新增包间',
-                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
-                    'url': '/admin/tasks/task/',
-                    'icon': 'fa fa-tasks'
-                },
             ]
         },
     ],

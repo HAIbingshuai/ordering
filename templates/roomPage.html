@@ -1,0 +1,576 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        .layui-card {
+            text-align: left;
+        }
+
+        .layui-card-body {
+            margin-left: 0;
+        }
+
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+
+        .layui-form-add-item {
+            margin-bottom: 20px;
+        }
+
+        .layui-inline {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 10px;
+        }
+
+
+        #addForm {
+            width: 600px; /* 设置表单宽度 */
+            margin: 0 auto; /* 居中显示 */
+        }
+
+
+        .tags-container {
+            display: flex;
+            align-items: center;
+            width: fit-content; /* 自适应内容宽度 */
+        }
+
+        .tag-input {
+            width: 150px; /* 调整输入框宽度 */
+        }
+
+        .button-container {
+            text-align: center;
+        }
+    </style>
+
+    <!-- 查询 -->
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <form class="layui-form" id="searchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">包间名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="roomName" placeholder="请输入包间名称"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button type="button" class="layui-btn" id="searchBtn">查询</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- 新增菜品目录 -->
+    <div id="addForm" style="display: none;">
+        <form class="layui-form">
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">房间名称</label>
+                <div class="layui-input-block">
+                    <input type="text" id="addRoomName" name="addRoomName" lay-verify="required" placeholder="请输入房间名称"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">包间配置</label>
+                <div class="layui-input-block">
+                    <input type="text" id="addRoomConfig" name="addRoomConfig" lay-verify="required"
+                           placeholder="请输入包间配置"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">包间位置</label>
+                <div class="layui-input-block">
+                    <input type="text" id="addRoomLoc" name="addRoomLoc" lay-verify="required" placeholder="请输入包间位置"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+
+            <div class="layui-form-add-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="roomStatus" name="roomStatus" lay-skin="switch" lay-text="在用|停用">
+                </div>
+            </div>
+
+        </form>
+    </div>
+    <!-- table -->
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <button class="layui-btn" id="addBtn">新增房间</button>
+                </div>
+            </div>
+            <table id="dataList" lay-filter="dataList"></table>
+        </div>
+    </div>
+    <!-- 分页控件 -->
+    <div id="pagination" style="margin-top: 20px;"></div>
+    <script src="https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/layui/2.6.8/layui.js"></script>
+
+    <script>
+        layui.use(['form', 'table', 'laypage', 'layer'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            var laypage = layui.laypage;
+            var layer = layui.layer;
+            {#下拉框#}
+            $.ajax({
+                url: '/dl_order/order/getCategoryIdList',  // 替换为你的后端接口 URL
+                type: 'GET',
+                success: function (res) {
+                    var data = res.data;
+                    var selectOptions = '<option value="">所有</option>';
+                    for (var i = 0; i < data.length; i++) {
+                        selectOptions += '<option value="' + data[i].firstCategoryId + '">' + data[i].categoryName + '</option>';
+                    }
+                    $('select[name="firstCategoryId"]').html(selectOptions);
+                    form.render('select');  // 重渲染下拉选择框
+                },
+                error: function (err) {
+                    console.error('Error fetching data:', err);
+                }
+            });
+            {#下拉框#}
+            $.ajax({
+                url: '/dl_order/order/getSecondCategoryIdList',  // 替换为你的后端接口 URL
+                type: 'GET',
+                success: function (res) {
+                    var data = res.data;
+                    var selectOptions = '<option value="">所有</option>';
+                    for (var i = 0; i < data.length; i++) {
+                        selectOptions += '<option value="' + data[i].secondCategoryId + '">' + data[i].categoryName + '</option>';
+                    }
+                    $('select[name="secondCategoryId"]').html(selectOptions);
+                    form.render('select');  // 重渲染下拉选择框
+                },
+                error: function (err) {
+                    console.error('Error fetching data:', err);
+                }
+            });
+            {#table#}
+            table.render({
+                elem: '#dataList',
+                data: {{ data | safe }},
+                limit: 10,
+                cols: [[
+                    {field: 'roomName', title: '包间名称'},
+                    {field: 'roomLocation', title: '包间位置'},
+                    {field: 'roomConfiguration', title: '包间配置'},
+                    {field: 'createdBy', title: '创建人'},
+                    {
+                        field: 'status',
+                        title: '状态',
+                        templet: function (d) {
+                            if (d.status === 1) {
+                                return '<span style="color: green;">在用</span>';
+                            } else {
+                                return '<span style="color: orange;">停用</span>';
+                            }
+                        }
+                    },
+
+                    {
+                        field: '操作', title: '操作',
+                        templet: function (d) {
+                            if (d.status === 1) {
+                                return '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>' +
+                                    '<button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>' +
+                                    '<button class="layui-btn layui-btn-xs layui-btn-warm" lay-event="update">停用</button>' +
+                                    '<button class="layui-btn layui-btn-normal layui-btn-danger  layui-btn-xs" lay-event="cancel">删除</button>';
+                            } else {
+                                return '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-event="view">查看</button>' +
+                                    '<button class="layui-btn layui-btn-xs" lay-event="edit">编辑</button>' +
+                                    '<button class="layui-btn layui-btn-xs layui-btn-lightpurple" lay-event="update">启用</button>' +
+                                    '<button class="layui-btn layui-btn-normal layui-btn-danger  layui-btn-xs" lay-event="cancel">删除</button>';
+                            }
+                        }, width: 300, align: 'center'
+                    },
+                ]]
+            });
+            {#分页#}
+            laypage.render({
+                elem: 'pagination',
+                count: {{ count }},
+                limit: 10,
+                layout: ['prev', 'page', 'next', 'skip'],
+                jump: function (obj, first) {
+                    if (!first) {
+                        $.ajax({
+                            url: '/dl_order/order/getRoomList',  // 替换为你的后端接口 URL
+                            type: 'GET',
+                            data: {
+                                page: obj.curr,
+                                pageSize: obj.limit
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    // 更新表格数据
+                                    table.reload('dataList', {
+                                        data: res.data
+                                    });
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                            }
+                        });
+                    }
+                }
+            });
+            {#点击查询按钮#}
+            $('#searchBtn').click(function () {
+                var roomName = $('input[name="roomName"]').val().trim();
+                $.ajax({
+                    url: '/dl_order/order/getRoomList',  // 替换为你的后端搜索接口 URL
+                    type: 'GET',
+                    data: {
+                        roomName: roomName,
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            table.reload('dataList', {
+                                data: res.data
+                            });
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            });
+            $('#addBtn').click(function () {
+                var roomName = $('input[name="roomName"]').val().trim();
+                layer.open({
+                    type: 1,
+                    title: '新增菜品',
+                    area: ['800px', '700px'],
+                    content: $('#addForm'), // 弹出新增页面的内容，即下面的表单
+                    btn: ['确认新增', '取消'],
+                    yes: function (index, layero) {
+                        // 在这里可以处理确认新增的逻辑，发送 AJAX 请求等
+                        // 例如，获取新增菜品表单数据
+                        var formData = {
+                            roomName: $('#addRoomName').val(),
+                            roomConfiguration: $('#addRoomConfig').val(),
+                            roomLocation: $('#addRoomLoc').val(),
+                            status: parseInt($('#roomStatus').prop('checked') ? 1 : 0),
+                        };
+
+                        // 发送 AJAX 请求进行新增操作，示例代码：
+                        $.ajax({
+                            url: '/dl_order/order/addRoom',  // 替换为你的后端新增接口 URL
+                            type: 'POST',
+                            data: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'  // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('新增成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getRoomList',  // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        data: {
+                                            roomName: roomName,
+                                        },
+                                        success: function (res) {
+                                            if (res.success) {
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+
+                                } else {
+                                    layer.msg('新增失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('新增失败，请重试');
+                            }
+                        });
+                    },
+                    btn2: function (index, layero) {
+                        $('#addRoomName').val('').prop('readonly', false);
+                        $('#addRoomConfig').val('').prop('readonly', false);
+                        $('#addRoomLoc').val('').prop('disabled', false);
+                        $('#roomStatus').prop('checked', false).prop('disabled', false);
+                        form.render(); // 重新渲染表单
+                        layer.close(index);
+                    },
+                    cancel: function () {
+                        $('#addRoomName').val('').prop('readonly', false);
+                        $('#addRoomConfig').val('').prop('readonly', false);
+                        $('#addRoomLoc').val('').prop('disabled', false);
+                        $('#roomStatus').prop('checked', false).prop('disabled', false);
+                        form.render();
+                    }
+                });
+            });
+
+            // 监听 查看菜品、编辑菜品、删除按钮 点击事件
+            table.on('tool(dataList)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'view') {
+                    layer.open({
+                        type: 1,
+                        title: '查看菜品',
+                        area: ['800px', '700px'],
+                        content: $('#addForm'), // 弹出编辑页面的内容，即下面的表单
+                        btn: ['退出'],
+                        success: function (layero, index) {
+                            // 将菜品数据填充到表单中
+                            $('#addRoomName').val(data.roomName).prop('readonly', true);
+                            $('#addRoomConfig').val(data.roomConfiguration).prop('readonly', true);
+                            $('#addRoomLoc').val(data.roomLocation).prop('readonly', true);
+                            $('#roomStatus').prop('checked', data.status === 1).prop('disabled', true);
+                            // 重新渲染表单
+                            form.render();
+                        },
+
+                        btn1: function (index, layero) {
+                            $('#addRoomName').val('').prop('readonly', false);
+                            $('#addRoomConfig').val('').prop('readonly', false);
+                            $('#addRoomLoc').val('').prop('readonly', false);
+                            $('#roomStatus').prop('checked', false).prop('disabled', false);
+                            form.render(); // 重新渲染表单
+                            layer.close(index);
+                        },
+
+                        cancel: function () {
+                            $('#addRoomName').val('').prop('readonly', false);
+                            $('#addRoomConfig').val('').prop('readonly', false);
+                            $('#addRoomLoc').val('').prop('readonly', false);
+                            $('#roomStatus').prop('checked', false).prop('disabled', false);
+                            form.render(); // 重新渲染表单
+                        }
+                    });
+                }
+                if (obj.event === 'edit') {
+                    var roomName = $('input[name="roomName"]').val().trim();
+                    layer.open({
+                        type: 1,
+                        title: '编辑菜品',
+                        area: ['800px', '700px'],
+                        content: $('#addForm'), // 弹出编辑页面的内容，即下面的表单
+                        btn: ['确认修改', '取消'],
+                        success: function (layero, index) {
+                            // 将菜品数据填充到表单中
+                            $('#addRoomName').val(data.roomName);
+                            $('#addRoomConfig').val(data.roomConfiguration);
+                            $('#addRoomLoc').val(data.roomLocation);
+                            $('#roomStatus').prop('checked', data.status === 1);
+                            form.render(); // 重新渲染表单
+                        },
+
+
+                        btn1: function (index, layero) {
+                            // 监听确认编辑按钮
+                            // 获取编辑后的表单数据
+                            var formData = {
+                                roomId: data.roomId, // 假设菜品数据中有菜品ID字段
+                                roomName: $('#addRoomName').val(),
+                                roomConfiguration: $('#addRoomConfig').val(),
+                                roomLocation: $('#addRoomLoc').val(),
+                                status: parseInt($('#roomStatus').prop('checked') ? 1 : 0)
+                            };
+
+                            // 发送编辑请求，示例代码：
+                            $.ajax({
+                                url: '/dl_order/order/updateRoom', // 替换为实际的编辑接口 URL
+                                type: 'POST',
+                                data: formData,
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                                },
+                                success: function (res) {
+                                    if (res.success) {
+                                        layer.msg('编辑成功');
+                                        layer.close(index); // 关闭弹窗
+                                        // 刷新表格数据等操作
+                                        // 执行查询操作，获取最新数据
+                                        $.ajax({
+                                            url: '/dl_order/order/getRoomList', // 替换为你的后端搜索接口 URL
+                                            type: 'GET',
+                                            data: {
+                                                roomName: roomName, // 可根据实际需要传递查询条件
+                                            },
+                                            success: function (res) {
+                                                if (res.success) {
+                                                    // 更新表格数据
+                                                    table.reload('dataList', {
+                                                        data: res.data
+                                                    });
+                                                }
+                                            },
+                                            error: function (err) {
+                                                console.log(err);
+                                            }
+                                        });
+                                    } else {
+                                        layer.msg('编辑失败: ' + res.message);
+                                    }
+                                },
+                                error: function (err) {
+                                    console.log(err);
+                                    layer.msg('编辑失败，请重试');
+                                }
+                            });
+                        },
+                        btn2: function (index, layero) {
+                            $('#adddishName').val('').prop('readonly', false);
+                            $('#stockQuantity').val('').prop('readonly', false);
+                            $('#firstCategoryId').val('').prop('disabled', false);
+                            $('#secondCategoryId').val('').prop('disabled', false);
+                            $('#imageUrl').val('').prop('readonly', false);
+                            $('#dishStatus').prop('checked', false).prop('disabled', false);
+                            $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
+                            $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
+                            $('.tag-input').val('').prop('readonly', false);
+                            $('#uploadBtn').val('').show(); // 显示上传按钮
+                            form.render(); // 重新渲染表单
+                            layer.close(index);
+                        },
+                        cancel: function () {
+                            // 点击窗口右上角关闭按钮时的处理，同样恢复表单状态
+                            $('#adddishName').val('').prop('readonly', false);
+                            $('#stockQuantity').val('').prop('readonly', false);
+                            $('#firstCategoryId').val('').prop('disabled', false); // 设置为可用
+                            $('#secondCategoryId').val('').prop('disabled', false); // 设置为可用
+                            $('#imageUrl').val('').prop('readonly', false);
+                            $('#dishStatus').prop('checked', false).prop('disabled', false);
+                            $('#dineInDisplayStatus').prop('checked', false).prop('disabled', false);
+                            $('#takeoutDisplayStatus').prop('checked', false).prop('disabled', false);
+                            $('.tag-input').val('').prop('readonly', false);
+                            $('#uploadBtn').show(); // 显示上传按钮
+                            form.render(); // 重新渲染表单
+                        }
+                    });
+                }
+                if (obj.event === 'update') {
+                    var roomName = $('input[name="roomName"]').val().trim();
+                    layer.confirm('确定要修改该条状态吗？', function (index) {
+                        if (data.status === 1) {
+                            roomStatusValue = 0
+                        } else {
+                            roomStatusValue = 1
+                        }
+
+                        var formData = {
+                            roomId: data.roomId, // 假设菜品数据中有菜品ID字段
+                            status: roomStatusValue
+                        }
+
+                        // 发送编辑请求，示例代码：
+                        $.ajax({
+                            url: '/dl_order/order/updateRoomStatus', // 替换为实际的编辑接口 URL
+                            type: 'POST',
+                            data: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('修改状态成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getRoomList', // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        data: {
+                                            roomName: roomName
+                                        },
+                                        success: function (res) {
+                                            if (res.success) {
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('编辑失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('编辑失败，请重试');
+                            }
+                        });
+                        layer.close(index); // 关闭确认框
+                    });
+                }
+                if (obj.event === 'cancel') {
+                    var roomName = $('input[name="roomName"]').val().trim();
+                    layer.confirm('确定要删除该条信息吗？', function (index) {
+                        var formData = {
+                            roomId: data.roomId,
+                        }
+                        $.ajax({
+                            url: '/dl_order/order/delRoom', // 替换为实际的编辑接口 URL
+                            type: 'POST',
+                            data: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}' // 使用 Django 提供的模板标签获取 CSRF 令牌
+                            },
+                            success: function (res) {
+                                if (res.success) {
+                                    layer.msg('删除成功');
+                                    layer.close(index);
+                                    $.ajax({
+                                        url: '/dl_order/order/getRoomList', // 替换为你的后端搜索接口 URL
+                                        type: 'GET',
+                                        data: {
+                                            roomName: roomName
+                                        },
+                                        success: function (res) {
+                                            if (res.success) {
+                                                table.reload('dataList', {
+                                                    data: res.data
+                                                });
+                                            }
+                                        },
+                                        error: function (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    layer.msg('编辑失败: ' + res.message);
+                                }
+                            },
+                            error: function (err) {
+                                console.log(err);
+                                layer.msg('编辑失败，请重试');
+                            }
+                        });
+                        layer.close(index); // 关闭确认框
+                    });
+                }
+            });
+        });
+
+
+
+
+    </script>
+
+{% endblock %}

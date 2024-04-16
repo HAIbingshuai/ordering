@@ -46,6 +46,8 @@ urlpatterns = [
     path('order/getUsageOfRoom', get_usage_of_room, name='get_usage_of_room'),  # ---查
 
     # 餐厅
+
+    path('order/getRestaurantCarouselList', get_restaurant_carousel_list, name='get_restaurant_carousel_list'),
     path('order/getRest', get_rest, name='get_rest'),  # ---查餐厅one
     path('order/updateRest', update_rest, name='updat_rest'),  # ---改
 

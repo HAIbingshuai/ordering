@@ -1,6 +1,6 @@
 from ..utils.result import Result, Result_page
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from ..models import Order, OrderDish
+from ..models import OrderInfo, OrderDish
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta

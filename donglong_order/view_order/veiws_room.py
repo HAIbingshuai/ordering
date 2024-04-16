@@ -2,7 +2,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from rest_framework.decorators import api_view
 from django.db import transaction
-from ..models import Room, Order
+from ..models import Room, OrderInfo
 from ..service.service_room import *
 from ..utils.judgment_of_null_void import *
 from ..utils.result import *
@@ -27,19 +27,20 @@ def add_room(request):
 
     try:
         room_dict = {
-            'roomName': request.data.get('roomName'),
-            'roomConfiguration': request.data.get('roomConfiguration'),
-            'roomLocation': request.data.get('roomLocation'),
+            'roomname': request.data.get('roomName'),
+            'roomconfiguration': request.data.get('roomConfiguration'),
+            'roomlocation': request.data.get('roomLocation'),
             'status': request.data.get('status'),
-            'createdBy_id': 1,  # request.user.id,
-            'createdAt': timezone.localtime()
+            'createdby_id': 1,  # request.user.id,
+            'createdat': timezone.localtime(),
+            'restaurantid_id':1
         }
         room = service_add_room(room_dict)
 
     except Exception as e:
         transaction.set_rollback(True)  # 回执
-        return Result.error('xx新建失败！请查看：' + str(e))
-    return Result.success('xx新建完成！')
+        return Result.error('包间新建失败！请查看：' + str(e))
+    return Result.success('包间新建完成！')
 
 
 @api_view(['POST'])
@@ -62,12 +63,12 @@ def update_room(request):
     try:
         room_dict = {
             'id': request.data.get('roomId'),
-            'roomName': request.data.get('roomName'),
-            'roomConfiguration': request.data.get('roomConfiguration'),
-            'roomLocation': request.data.get('roomLocation'),
+            'roomname': request.data.get('roomName'),
+            'roomconfiguration': request.data.get('roomConfiguration'),
+            'roomlocation': request.data.get('roomLocation'),
             'status': request.data.get('status'),
-            'lastUpdatedBy_id': 1,  # request.user.id,
-            'updatedAt': timezone.localtime()
+            'lastupdatedby_id': 1,  # request.user.id,
+            'updatedat': timezone.localtime()
         }
         service_update_room(room_dict)
 
@@ -101,43 +102,47 @@ def update_room_status(request):
 def del_room(request):
     if request.method != 'POST':
         return Result.error('无效的请求方法')
-    if not request.data.get('roomId'):
+
+    roomId_value = request.data.get('roomId')
+    if not roomId_value:
         Result.error('请检查，缺少roomId！')
     try:
-        service_delete_room(request.data.get('roomId'))
+        service_delete_room(roomId_value)
     except Exception as e:
-        transaction.set_rollback(True)  # 回执
-        return Result.error('xx删除失败！请查看：' + str(e))
-    return Result.success('xx删除完成！')
+        transaction.set_rollback(True)
+        return Result.error('房间删除失败！请查看：' + str(e))
+    return Result.success('房间删除完成！')
 
 
 @api_view(['GET'])
 def get_room_list(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
-
-    try:
-        roomName = request.GET.get('roomName')
-    except:
-        return Result.error('请检查输入项！')
-    all_results = []
-    roomList = Room.objects.filter(**{'roomName__contains': roomName})
+    roomName = request.GET.get('roomName')
+    all_results_ = []
+    query = {}
+    if roomName:
+        query['roomname__contains'] = roomName
+    roomList = Room.objects.filter(**query)
     for roomOneContent in roomList:
-        dish_and_tags_dict = {
+        room_one_dict = {
             'roomId': roomOneContent.id,
-            'roomName': roomOneContent.roomName,
-            'roomConfiguration': roomOneContent.roomConfiguration,
-            'roomLocation': roomOneContent.roomLocation,
+            'roomName': roomOneContent.roomname,
+            'roomConfiguration': roomOneContent.roomconfiguration,
+            'roomLocation': roomOneContent.roomlocation,
             'status': roomOneContent.status,
-            'createdBy': roomOneContent.createdBy.managerName,
+            'createdBy': roomOneContent.createdby.managername,
         }
-        all_results.append(dish_and_tags_dict)
-    #
+        all_results_.append(room_one_dict)
+
+    all_results = sorted(all_results_, key=lambda x: x['roomId'], reverse=False)
     paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
-    paginated_results = paginator.get_page(int(request.GET.get('page', 1)))
+    page_number = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(page_number)
     page_results = [result for result in paginated_results]
-    #
-    return Result_page.success(data=page_results, total=len(all_results))
+
+    return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
+                               page_html='roomPage.html', request=request)
 
 
 @api_view(['GET'])

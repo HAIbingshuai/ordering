@@ -1,4 +1,4 @@
-from ..models import Order, OrderDish, OrderStatus
+from ..models import OrderInfo, OrderDish, OrderStatus
 
 
 def service_add_Order(order_dict):

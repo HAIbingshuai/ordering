@@ -9,6 +9,35 @@ from ..models import Restaurant, RestaurantCarousel
 
 
 @api_view(['GET'])
+def get_restaurant_carousel_list(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+    all_results_ = []
+    restaurantCarouselList = RestaurantCarousel.objects.filter()
+    for restCarOneContent in restaurantCarouselList:
+        room_one_dict = {
+            'carouselId': restCarOneContent.id,
+            'carouselname': restCarOneContent.carouselname,
+            'carouselimageurl': restCarOneContent.carouselimageurl,
+            'carouseltimerange': restCarOneContent.carouseltimerange,
+            'createdby': restCarOneContent.createdby.managername,
+            'carouseltype': restCarOneContent.carouseltype,
+        }
+        all_results_.append(room_one_dict)
+
+    all_results = sorted(all_results_, key=lambda x: x['carouselId'], reverse=False)
+    paginator = Paginator(all_results, int(request.GET.get('pageSize', 10)))
+    page_number = int(request.GET.get('page', 1))
+    paginated_results = paginator.get_page(page_number)
+    page_results = [result for result in paginated_results]
+
+    return Result_page.success(data=page_results, paginator=paginator, page_number=page_number,
+                               page_html='restaurant.html', request=request)
+
+
+
+
+@api_view(['GET'])
 def get_rest(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
@@ -18,16 +47,15 @@ def get_rest(request):
     restaurantOne = restaurantList[0]
     dish_and_tags_dict = {
         'restId': restaurantOne.id,
-        'restaurantName': restaurantOne.restaurantName,
-        'restaurantType': restaurantOne.restaurantType,
-        'openingHours': restaurantOne.openingHours,
-        'restaurantPhone': restaurantOne.restaurantPhone,
-        'restaurantAddress': restaurantOne.restaurantAddress,
-        'navigationCoordinates': restaurantOne.navigationCoordinates,
-        'createdBy': restaurantOne.createdBy.managerName,
-        'createdAt': restaurantOne.createdAt,
+        'restaurantName': restaurantOne.restaurantname,
+        'restaurantType': restaurantOne.restauranttype,
+        'openingHours': restaurantOne.openinghours,
+        'restaurantPhone': restaurantOne.restaurantphone,
+        'restaurantAddress': restaurantOne.restaurantaddress,
+        'navigationCoordinates': restaurantOne.navigationcoordinates,
+        'createdBy': restaurantOne.createdby.managername,
+        'createdAt': restaurantOne.createdat,
     }
-
     return Result.success(data=dish_and_tags_dict)
 
 
