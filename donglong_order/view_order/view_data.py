@@ -14,10 +14,10 @@ def get_data(request):
     if request.method != 'GET':
         return Result.error('无效的请求方法')
     # 待处理订单量
-    dcl_obj_list = Order.objects.filter(orderstatus=1)
+    dcl_obj_list = OrderInfo.objects.filter(orderstatus=1)
     dcldd_num = len(dcl_obj_list)
     # 订单总量
-    ddzl_obj_list = Order.objects.filter()
+    ddzl_obj_list = OrderInfo.objects.filter()
     ddzl_num = len(ddzl_obj_list)
     # 总接待人次,总包间预定个数     # 堂食与包间比例
     zjdrs, zbj_num, ztangshi_num = 0, 0, 0
@@ -33,7 +33,7 @@ def get_data(request):
     # 本月订单数据
     today = timezone.now().date()
     thirty_days_ago = today - timedelta(days=30)
-    orders_per_day = Order.objects.filter(
+    orders_per_day = OrderInfo.objects.filter(
         createdat__gte=thirty_days_ago,  # 筛选创建时间大于等于30天前的订单
         createdat__lte=today             # 筛选创建时间小于等于今天的订单
     ).annotate(
@@ -51,7 +51,7 @@ def get_data(request):
     dish_love_list = [[str(dish['dishid__dishname']), dish['total_quantity']] for dish in top_dishes]
 
     # 包间欢迎程度排名
-    top_rooms = Order.objects.filter(roomid__isnull=False).values('roomid__roomname').annotate(
+    top_rooms = OrderInfo.objects.filter(roomid__isnull=False).values('roomid__roomname').annotate(
         order_count=Count('id')
     ).order_by('-order_count')[:10]
     room_love_list = [[str(room['roomid__roomname']), room['order_count']] for room in top_rooms]

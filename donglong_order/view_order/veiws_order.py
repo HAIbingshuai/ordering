@@ -114,7 +114,7 @@ def get_order_list(request):
     query_params['roomid_id'] = 5  # 堂食
 
     # 执行查询
-    orderList = Order.objects.filter(**query_params)
+    orderList = OrderInfo.objects.filter(**query_params)
     # 订单状态字典表
     orderStatusDict = service_orderStatusDict()
 
@@ -201,7 +201,7 @@ def get_orderandroom_list(request):
         query &= ~Q(roomid_id=5)
 
     # 执行查询
-    orderList = Order.objects.filter(query)
+    orderList = OrderInfo.objects.filter(query)
     # 订单状态字典表
     orderStatusDict = service_orderStatusDict()
     # 订单查询
@@ -243,7 +243,7 @@ def get_order(request):
         return Result.error('无效的请求方法')
 
     order_id = request.GET.get('orderId')  # 订单编号
-    order_one_get = Order.objects.filter(id=order_id)
+    order_one_get = OrderInfo.objects.filter(id=order_id)
     if len(order_one_get) == 0:
         return Result.error('查无此订单信息！')
 

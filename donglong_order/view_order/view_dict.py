@@ -197,3 +197,22 @@ def get_dish_list_dict(request):
         } for one in dish_list
     ]
     return Result.success(data=all_list)
+
+
+
+
+@api_view(['GET'])
+def get_carousel_dict_list(request):
+    if request.method != 'GET':
+        return Result.error('无效的请求方法')
+    all_list = [
+        {
+            "carouselId": 1,
+            "carouselName": '环境图轮播',
+        } ,
+        {
+            "carouselId": 2,
+            "carouselName": '招牌菜轮播',
+        }
+    ]
+    return Result.success(data=all_list)

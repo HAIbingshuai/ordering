@@ -35,7 +35,6 @@ urlpatterns = [
     path('order/addWeekDishList', add_week_dish_list, name='add_week_dish_list'),
     path('order/delDishWeek', del_dish_week, name='del_dish_week'),
 
-
     # 房间管理
     path('order/addRoom', add_room, name='add_room'),  # ---增
     path('order/updateRoom', update_room, name='update_room'),  # ---改
@@ -47,12 +46,13 @@ urlpatterns = [
 
     # 餐厅
 
+    path('order/addCarousel', add_carousel, name='add_carousel_list'),
     path('order/getRestaurantCarouselList', get_restaurant_carousel_list, name='get_restaurant_carousel_list'),
     path('order/getRest', get_rest, name='get_rest'),  # ---查餐厅one
     path('order/updateRest', update_rest, name='updat_rest'),  # ---改
 
     # 轮播
-    path('order/addCarousel', add_carousel, name='add_carousel'),  # 查轮播图
+    # path('order/addCarousel', add_carousel, name='add_carousel'),  # 查轮播图
     path('order/updateCarouselStatus', update_carousel_status, name='update_carousel_status'),  # 修改播图
     path('order/delCarousel', del_carousel, name='del_carousel'),  # 查轮播图LIST
     path('order/getCarouselList', get_carousel_list, name='get_carousel_list'),  # 查轮播图LIST
@@ -79,5 +79,6 @@ urlpatterns = [
 
     path('order/getweekIdList', get_weekid_List, name='get_weekid_List'),
 
+    path('order/getCarouselDictList', get_carousel_dict_list, name='get_carousel_dict_list'),
     path('order/getDishListDict', get_dish_list_dict, name='get_dish_list_dict'),
 ]
